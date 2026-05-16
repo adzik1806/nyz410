@@ -6,15 +6,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 2. PROTEKSI AKSES & LOGIN CHECK (Gunakan Cookie jika Session Vercel terhapus otomatis)
+// 2. PROTEKSI AKSES & LOGIN CHECK (Disinkronkan dengan boolean true dari login.php)
 if (!isset($_SESSION['admin']) && !isset($_COOKIE['admin_login'])) {
     header("Location: login.php");
     exit;
 }
 
-// Pulihkan session dari cookie jika serverless melakukan restart instans web
+// Pulihkan session jika sempat hilang karena cold-start Serverless Vercel
 if (!isset($_SESSION['admin']) && isset($_COOKIE['admin_login'])) {
-    $_SESSION['admin'] = $_COOKIE['admin_login'];
+    $_SESSION['admin'] = true;
 }
 
 // 3. AUTO-LOGOUT (3 Jam = 10800 Detik) MENGGUNAKAN COOKIE
