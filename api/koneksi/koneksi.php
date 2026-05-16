@@ -2,7 +2,7 @@
 // Masukkan data asli dari akun TiDB Cloud kamu
 $host = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com"; 
 $user = "3dnB917rPV4v88s.root"; // Pastikan diisi username root lengkapmu dari TiDB
-$pass = "JoBOoFJ0SLqOk7Md"; // Pastikan diisi password asli TiDB-mu
+$pass = "dL48mU1Ba0xK2lKo"; // Pastikan diisi password asli TiDB-mu
 $db   = "komunitas_bola"; 
 $port = 4000; 
 
