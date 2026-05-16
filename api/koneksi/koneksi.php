@@ -1,4 +1,9 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.use_cookies', 1);
+    ini_set('session.use_only_cookies', 1);
+    session_start();
+}
 // Masukkan data asli dari akun TiDB Cloud kamu
 $host = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com"; 
 $user = "3dnB917rPV4v88s.root"; // Pastikan diisi username root lengkapmu dari TiDB
