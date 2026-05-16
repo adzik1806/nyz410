@@ -20,12 +20,12 @@ if(isset($_POST['login'])) {
     $data  = mysqli_fetch_assoc($query);
 
     if($data) {
-        // 2. SET SESSION UTK SERVERLESS
-        $_SESSION['admin'] = $user;
+        // Set session asli bawaanmu
+        $_SESSION['admin'] = true;
         
-        // 3. TITIP COOKIE DI BROWSER AGAR JALUR LOGIN AWET DI VERCEL (3 JAM = 10800 DETIK)
+        // Titip cookie penunjang di browser agar awet di Vercel (3 Jam = 10800 Detik)
         $timeout = 10800;
-        setcookie('admin_login', $user, time() + $timeout, '/');
+        setcookie('admin_login', 'aktif', time() + $timeout, '/');
         setcookie('last_activity', time(), time() + $timeout, '/');
 
         header("Location: index.php");
