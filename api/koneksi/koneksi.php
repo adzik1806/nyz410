@@ -1,13 +1,19 @@
 <?php
-$host = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com";
-$user = "3dnB917rPV4v88s.root";     // Default XAMPP
-$pass = "kiuNEfdEu49G3rhh";         // Default XAMPP kosong
-$db   = "komunitas_bola"; // Pastikan nama database sesuai yang Anda buat di phpMyAdmin
-$port = 4000; // TiDB Cloud wajib menggunakan port 4000
+// Ambil data asli TiDB Cloud milikmu
+$host = "gateway01.ap-southeast-1.prod.aws.tidbcloud.com"; 
+$user = "3dnB917rPV4v88s...root"; // Masukkan username root lengkapmu di sini
+$pass = "PasswordPanjangDariTiDBKamu"; // Masukkan password asli TiDB-mu di sini
+$db   = "komunitas_bola"; 
+$port = 4000; 
 
-$conn = mysqli_connect($host, $user, $pass, $db);
+// 1. Inisialisasi objek MySQLi
+$conn = mysqli_init();
 
-if (!$conn) {
-    die("Koneksi gagal: " . mysqli_connect_error());
+// 2. Aktifkan bendera SSL agar koneksi aman (Mengatasi error insecure transport)
+mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
+
+// 3. Lakukan koneksi ke TiDB Cloud dengan port 4000
+if (!mysqli_real_connect($conn, $host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL)) {
+    die("Koneksi Database Gagal: " . mysqli_connect_error());
 }
 ?>
