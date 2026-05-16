@@ -1,5 +1,11 @@
 <?php
-session_start();
+// 1. AKTIFKAN COOKIE SESSION BAWAAN DI VERCEL
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.use_cookies', 1);
+    ini_set('session.use_only_cookies', 1);
+    session_start();
+}
+
 include(__DIR__ . '/../koneksi/koneksi.php');
 
 // --- AMBIL DATA SETTING UNTUK FAVICON ---
@@ -14,7 +20,14 @@ if(isset($_POST['login'])) {
     $data  = mysqli_fetch_assoc($query);
 
     if($data) {
-        $_SESSION['admin'] = true;
+        // 2. SET SESSION UTK SERVERLESS
+        $_SESSION['admin'] = $user;
+        
+        // 3. TITIP COOKIE DI BROWSER AGAR JALUR LOGIN AWET DI VERCEL (3 JAM = 10800 DETIK)
+        $timeout = 10800;
+        setcookie('admin_login', $user, time() + $timeout, '/');
+        setcookie('last_activity', time(), time() + $timeout, '/');
+
         header("Location: index.php");
         exit;
     } else {
