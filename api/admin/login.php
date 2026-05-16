@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../koneksi/koneksi.php';
+include(__DIR__ . '/../koneksi/koneksi.php');
 
 // --- AMBIL DATA SETTING UNTUK FAVICON ---
 $setting = mysqli_fetch_assoc(mysqli_query($conn, "SELECT logo_website FROM settings WHERE id_setting = 1"));
