@@ -1,22 +1,40 @@
 <?php
-session_start();
+// 1. AKTIFKAN COOKIE SESSION BAWAAN DI VERCEL
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.use_cookies', 1);
+    ini_set('session.use_only_cookies', 1);
+    session_start();
+}
 
-// 1. PROTEKSI AKSES & LOGIN CHECK
-if (!isset($_SESSION['admin'])) {
+// 2. PROTEKSI AKSES & LOGIN CHECK (Gunakan Cookie jika Session Vercel terhapus otomatis)
+if (!isset($_SESSION['admin']) && !isset($_COOKIE['admin_login'])) {
     header("Location: login.php");
     exit;
 }
 
-// 2. AUTO-LOGOUT (3 Jam = 10800 Detik)
-$timeout = 10800; 
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout)) {
-    session_unset(); session_destroy();
-    header("Location: login.php?pesan=expired");
-    exit;
+// Pulihkan session dari cookie jika serverless melakukan restart instans web
+if (!isset($_SESSION['admin']) && isset($_COOKIE['admin_login'])) {
+    $_SESSION['admin'] = $_COOKIE['admin_login'];
 }
-$_SESSION['last_activity'] = time();
 
-include '../koneksi/koneksi.php';
+// 3. AUTO-LOGOUT (3 Jam = 10800 Detik) MENGGUNAKAN COOKIE
+$timeout = 10800; 
+if (isset($_COOKIE['last_activity'])) {
+    $elapsed_time = time() - $_COOKIE['last_activity'];
+    if ($elapsed_time > $timeout) {
+        session_unset(); 
+        session_destroy();
+        setcookie('admin_login', '', time() - 3600, '/');
+        setcookie('last_activity', '', time() - 3600, '/');
+        header("Location: login.php?pesan=expired");
+        exit;
+    }
+}
+// Perbarui detak aktivitas di browser user
+setcookie('last_activity', time(), time() + $timeout, '/');
+
+// 4. JALUR AMAN FILE KONEKSI DI VERCEL
+include __DIR__ . '/../koneksi/koneksi.php';
 
 // AMBIL DATA SETTING WEBSITE
 $setting = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1"));
@@ -46,7 +64,7 @@ if (isset($_POST['tambah_venue'])) {
     $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
     $new_foto = uniqid() . "_" . $_FILES['foto_venue']['name'];
-    move_uploaded_file($_FILES['foto_venue']['tmp_name'], '../assets/venues/' . $new_foto);
+    move_uploaded_file($_FILES['foto_venue']['tmp_name'], __DIR__ . '/../../assets/venues/' . $new_foto);
     mysqli_query($conn, "INSERT INTO venues (nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$nama_v', '$kat_v', '$alamat_v', '$maps', '$new_foto')");
     header("Location: index.php"); exit;
 }
@@ -54,7 +72,7 @@ if (isset($_POST['tambah_venue'])) {
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
     $new_file = uniqid() . "_" . $_FILES['logo_sponsor']['name'];
-    move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], '../assets/sponsors/' . $new_file);
+    move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], __DIR__ . '/../../assets/sponsors/' . $new_file);
     mysqli_query($conn, "INSERT INTO sponsors (nama_sponsor, logo_icon) VALUES ('$nama_s', '$new_file')");
     header("Location: index.php"); exit;
 }
@@ -71,7 +89,7 @@ if (isset($_POST['tambah_kas'])) {
 if (isset($_POST['tambah_gallery'])) {
     $caption = mysqli_real_escape_string($conn, $_POST['caption']);
     $new_file = uniqid() . "_" . $_FILES['foto']['name'];
-    move_uploaded_file($_FILES['foto']['tmp_name'], '../assets/gallery/' . $new_file);
+    move_uploaded_file($_FILES['foto']['tmp_name'], __DIR__ . '/../../assets/gallery/' . $new_file);
     mysqli_query($conn, "INSERT INTO gallery (foto, caption) VALUES ('$new_file', '$caption')");
     header("Location: index.php"); exit;
 }
@@ -83,18 +101,18 @@ if (isset($_POST['update_settings'])) {
     mysqli_query($conn, "UPDATE settings SET nama_website='$web_name', deskripsi_website='$web_desc', wa_admin='$web_wa', stats_member='".$_POST['stats_member']."', stats_venue='".$_POST['stats_venue']."' WHERE id_setting=1");
     if($_FILES['logo_web']['name'] != "") {
         $logo_name = uniqid() . "_" . $_FILES['logo_web']['name'];
-        move_uploaded_file($_FILES['logo_web']['tmp_name'], '../assets/' . $logo_name);
+        move_uploaded_file($_FILES['logo_web']['tmp_name'], __DIR__ . '/../../assets/' . $logo_name);
         mysqli_query($conn, "UPDATE settings SET logo_website='$logo_name' WHERE id_setting=1");
     }
     header("Location: index.php"); exit;
 }
 
 // LOGIKA HAPUS
-if (isset($_GET['hapus'])) { mysqli_query($conn, "DELETE FROM events WHERE id_event = ".$_GET['hapus']); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_venue'])) { mysqli_query($conn, "DELETE FROM venues WHERE id_venue = ".$_GET['hapus_venue']); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_sponsor'])) { mysqli_query($conn, "DELETE FROM sponsors WHERE id_sponsor = ".$_GET['hapus_sponsor']); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_kas'])) { mysqli_query($conn, "DELETE FROM kas WHERE id_kas = ".$_GET['hapus_kas']); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_gallery'])) { mysqli_query($conn, "DELETE FROM gallery WHERE id_gallery = ".$_GET['hapus_gallery']); header("Location: index.php"); exit; }
+if (isset($_GET['hapus'])) { mysqli_query($conn, "DELETE FROM events WHERE id_event = ".intval($_GET['hapus'])); header("Location: index.php"); exit; }
+if (isset($_GET['hapus_venue'])) { mysqli_query($conn, "DELETE FROM venues WHERE id_venue = ".intval($_GET['hapus_venue'])); header("Location: index.php"); exit; }
+if (isset($_GET['hapus_sponsor'])) { mysqli_query($conn, "DELETE FROM sponsors WHERE id_sponsor = ".intval($_GET['hapus_sponsor'])); header("Location: index.php"); exit; }
+if (isset($_GET['hapus_kas'])) { mysqli_query($conn, "DELETE FROM kas WHERE id_kas = ".intval($_GET['hapus_kas'])); header("Location: index.php"); exit; }
+if (isset($_GET['hapus_gallery'])) { mysqli_query($conn, "DELETE FROM gallery WHERE id_gallery = ".intval($_GET['hapus_gallery'])); header("Location: index.php"); exit; }
 
 // SALDO KAS
 $m = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'"));
