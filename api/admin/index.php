@@ -6,18 +6,17 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 2. PROTEKSI AKSES & LOGIN CHECK (Disinkronkan dengan boolean true dari login.php)
+// 2. PROTEKSI AKSES & LOGIN CHECK
 if (!isset($_SESSION['admin']) && !isset($_COOKIE['admin_login'])) {
     header("Location: login.php");
     exit;
 }
 
-// Pulihkan session jika sempat hilang karena cold-start Serverless Vercel
 if (!isset($_SESSION['admin']) && isset($_COOKIE['admin_login'])) {
     $_SESSION['admin'] = true;
 }
 
-// 3. AUTO-LOGOUT (3 Jam = 10800 Detik) MENGGUNAKAN COOKIE
+// 3. AUTO-LOGOUT (3 Jam)
 $timeout = 10800; 
 if (isset($_COOKIE['last_activity'])) {
     $elapsed_time = time() - $_COOKIE['last_activity'];
@@ -30,10 +29,9 @@ if (isset($_COOKIE['last_activity'])) {
         exit;
     }
 }
-// Perbarui detak aktivitas di browser user
 setcookie('last_activity', time(), time() + $timeout, '/');
 
-// 4. JALUR AMAN FILE KONEKSI DI VERCEL
+// 4. FILE KONEKSI
 include __DIR__ . '/../koneksi/koneksi.php';
 
 // AMBIL DATA SETTING WEBSITE
@@ -46,7 +44,7 @@ $total_minisoccer = mysqli_num_rows(mysqli_query($conn, "SELECT id_event FROM ev
 $total_venues   = mysqli_num_rows(mysqli_query($conn, "SELECT id_venue FROM venues"));
 $total_sponsors = mysqli_num_rows(mysqli_query($conn, "SELECT id_sponsor FROM sponsors"));
 
-// --- PROSES CRUD (REDIRECT AGAR STAY MENU) ---
+// --- PROSES CRUD (REDIRECT DENGAN HASH AGAR STAY MENU) ---
 if (isset($_POST['tambah_event'])) {
     $judul = mysqli_real_escape_string($conn, $_POST['judul']);
     $kategori = $_POST['kategori'];
@@ -55,11 +53,9 @@ if (isset($_POST['tambah_event'])) {
     $jam = $_POST['jam'];
     $harga = ($kategori == 'Futsal') ? $_POST['harga_flat'] : $_POST['harga_pemain'];
     
-    // ID Otomatis PHP untuk mengakali TiDB Cloud
     $id_event_otomatis = time();
-    
     mysqli_query($conn, "INSERT INTO events (id_event, judul_event, kategori, lokasi, tanggal, jam, harga, status_event) VALUES ('$id_event_otomatis', '$judul', '$kategori', '$lokasi', '$tanggal', '$jam', '$harga', 'tersedia')");
-    header("Location: index.php"); exit;
+    header("Location: index.php#schedules"); exit;
 }
 
 if (isset($_POST['tambah_venue'])) {
@@ -67,10 +63,8 @@ if (isset($_POST['tambah_venue'])) {
     $kat_v = $_POST['kategori_venue'];
     $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
-    
     $id_venue_otomatis = time(); 
     
-    // LOGIKA BASE64
     $foto_data = "default_venue.jpg"; 
     if (isset($_FILES['foto_venue']) && $_FILES['foto_venue']['tmp_name'] != "") {
         $path = $_FILES['foto_venue']['tmp_name'];
@@ -80,15 +74,13 @@ if (isset($_POST['tambah_venue'])) {
     }
     
     mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')");
-    header("Location: index.php"); exit;
+    header("Location: index.php#venues"); exit;
 }
 
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
-    
     $id_sponsor_otomatis = time();
     
-    // LOGIKA BASE64
     $foto_data = "default_sponsor.png"; 
     if (isset($_FILES['logo_sponsor']) && $_FILES['logo_sponsor']['tmp_name'] != "") {
         $path = $_FILES['logo_sponsor']['tmp_name'];
@@ -98,7 +90,7 @@ if (isset($_POST['tambah_sponsor'])) {
     }
     
     mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '$foto_data')");
-    header("Location: index.php"); exit;
+    header("Location: index.php#sponsors"); exit;
 }
 
 if (isset($_POST['tambah_kas'])) {
@@ -108,17 +100,14 @@ if (isset($_POST['tambah_kas'])) {
     $tipe = $_POST['tipe'];
     
     $id_kas_otomatis = time();
-    
     mysqli_query($conn, "INSERT INTO kas (id_kas, keterangan, tanggal, jumlah, tipe) VALUES ('$id_kas_otomatis', '$ket', '$tgl', '$jml', '$tipe')");
-    header("Location: index.php"); exit;
+    header("Location: index.php#kas"); exit;
 }
 
 if (isset($_POST['tambah_gallery'])) {
     $caption = mysqli_real_escape_string($conn, $_POST['caption']);
-    
     $id_gallery_otomatis = time();
     
-    // LOGIKA BASE64
     $foto_data = "default_gallery.jpg"; 
     if (isset($_FILES['foto']) && $_FILES['foto']['tmp_name'] != "") {
         $path = $_FILES['foto']['tmp_name'];
@@ -128,7 +117,7 @@ if (isset($_POST['tambah_gallery'])) {
     }
     
     mysqli_query($conn, "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$foto_data', '$caption')");
-    header("Location: index.php"); exit;
+    header("Location: index.php#gallery"); exit;
 }
 
 if (isset($_POST['update_settings'])) {
@@ -141,15 +130,15 @@ if (isset($_POST['update_settings'])) {
         $logo_name = uniqid() . "_" . $_FILES['logo_web']['name'];
         mysqli_query($conn, "UPDATE settings SET logo_website='$logo_name' WHERE id_setting=1");
     }
-    header("Location: index.php"); exit;
+    header("Location: index.php#settings"); exit;
 }
 
-// LOGIKA HAPUS
-if (isset($_GET['hapus'])) { mysqli_query($conn, "DELETE FROM events WHERE id_event = ".intval($_GET['hapus'])); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_venue'])) { mysqli_query($conn, "DELETE FROM venues WHERE id_venue = ".intval($_GET['hapus_venue'])); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_sponsor'])) { mysqli_query($conn, "DELETE FROM sponsors WHERE id_sponsor = ".intval($_GET['hapus_sponsor'])); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_kas'])) { mysqli_query($conn, "DELETE FROM kas WHERE id_kas = ".intval($_GET['hapus_kas'])); header("Location: index.php"); exit; }
-if (isset($_GET['hapus_gallery'])) { mysqli_query($conn, "DELETE FROM gallery WHERE id_gallery = ".intval($_GET['hapus_gallery'])); header("Location: index.php"); exit; }
+// LOGIKA HAPUS (DENGAN REDIRECT HASH)
+if (isset($_GET['hapus'])) { mysqli_query($conn, "DELETE FROM events WHERE id_event = ".intval($_GET['hapus'])); header("Location: index.php#schedules"); exit; }
+if (isset($_GET['hapus_venue'])) { mysqli_query($conn, "DELETE FROM venues WHERE id_venue = ".intval($_GET['hapus_venue'])); header("Location: index.php#venues"); exit; }
+if (isset($_GET['hapus_sponsor'])) { mysqli_query($conn, "DELETE FROM sponsors WHERE id_sponsor = ".intval($_GET['hapus_sponsor'])); header("Location: index.php#sponsors"); exit; }
+if (isset($_GET['hapus_kas'])) { mysqli_query($conn, "DELETE FROM kas WHERE id_kas = ".intval($_GET['hapus_kas'])); header("Location: index.php#kas"); exit; }
+if (isset($_GET['hapus_gallery'])) { mysqli_query($conn, "DELETE FROM gallery WHERE id_gallery = ".intval($_GET['hapus_gallery'])); header("Location: index.php#gallery"); exit; }
 
 // SALDO KAS
 $m = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'"));
@@ -435,6 +424,9 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
     <script>
         function showSection(sectionId) {
+            // Ubah hash URL browser secara dinamis agar saat di-refresh posisi tab terkunci
+            window.location.hash = sectionId;
+
             document.querySelectorAll('.spa-section').forEach(section => {
                 section.classList.remove('active');
             });
@@ -487,6 +479,16 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        // LOGIKA DETEKSI AUTOMATIS URL HASH SAAT HALAMAN SELESAI MEMUAT (RELOAD)
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentHash = window.location.hash.substring(1); // Ambil teks setelah tanda #
+            if (currentHash) {
+                showSection(currentHash); // Buka section sesuai hash redirect PHP
+            } else {
+                showSection('dashboard'); // Default awal jika tidak ada hash
+            }
+        });
     </script>
 </body>
 </html>
