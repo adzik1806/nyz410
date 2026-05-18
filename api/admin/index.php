@@ -58,7 +58,6 @@ if (isset($_POST['tambah_event'])) {
     // ID Otomatis PHP untuk mengakali TiDB Cloud
     $id_event_otomatis = time();
     
-    // Menambahkan id_event ke dalam INSERT
     mysqli_query($conn, "INSERT INTO events (id_event, judul_event, kategori, lokasi, tanggal, jam, harga, status_event) VALUES ('$id_event_otomatis', '$judul', '$kategori', '$lokasi', '$tanggal', '$jam', '$harga', 'tersedia')");
     header("Location: index.php"); exit;
 }
@@ -72,29 +71,37 @@ if (isset($_POST['tambah_venue'])) {
     // Pembuatan ID unik otomatis lewat PHP untuk mengakali TiDB Cloud
     $id_venue_otomatis = time(); 
     
-    $new_foto = ($_FILES['foto_venue']['name'] != "") ? uniqid() . "_" . $_FILES['foto_venue']['name'] : "default_venue.jpg";
+    // LOGIKA BASE64: Mengonversi file gambar menjadi string teks panjang
+    $foto_data = "default_venue.jpg"; // fallback jika tidak memilih foto
+    if (isset($_FILES['foto_venue']) && $_FILES['foto_venue']['tmp_name'] != "") {
+        $path = $_FILES['foto_venue']['tmp_name'];
+        $type = pathinfo($_FILES['foto_venue']['name'], PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
     
-    // Tetap dimatikan karena Vercel Read-Only
-    // move_uploaded_file($_FILES['foto_venue']['tmp_name'], __DIR__ . '/../../assets/venues/' . $new_foto);
-    
-    mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$new_foto')");
+    // Menyimpan teks string gambar $foto_data ke kolom foto_venue
+    mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')");
     header("Location: index.php"); exit;
 }
 
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
     
-    // 1. BUAT ID OTOMATIS LEWAT PHP UNTUK MENGAKALI TIDB CLOUD
+    // ID Otomatis PHP untuk mengakali TiDB Cloud
     $id_sponsor_otomatis = time();
     
-    // 2. CEK APAKAH ADA FILE YANG DIUPLOAD
-    $new_file = ($_FILES['logo_sponsor']['name'] != "") ? uniqid() . "_" . $_FILES['logo_sponsor']['name'] : "default_sponsor.png";
+    // LOGIKA BASE64: Mengonversi file logo menjadi string teks panjang
+    $foto_data = "default_sponsor.png"; // fallback jika tidak memilih logo
+    if (isset($_FILES['logo_sponsor']) && $_FILES['logo_sponsor']['tmp_name'] != "") {
+        $path = $_FILES['logo_sponsor']['tmp_name'];
+        $type = pathinfo($_FILES['logo_sponsor']['name'], PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
     
-    // 3. DIMATIKAN (DIBERI //) KARENA VERCEL BERSIFAT READ-ONLY
-    // move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], __DIR__ . '/../../assets/sponsors/' . $new_file);
-    
-    // 4. MASUKKAN id_sponsor KE DALAM QUERY INSERT
-    mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '$new_file')");
+    // Menyimpan teks string gambar $foto_data ke kolom logo_icon
+    mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '$foto_data')");
     header("Location: index.php"); exit;
 }
 
@@ -107,7 +114,6 @@ if (isset($_POST['tambah_kas'])) {
     // ID Otomatis PHP untuk mengakali TiDB Cloud
     $id_kas_otomatis = time();
     
-    // Menambahkan id_kas ke dalam INSERT
     mysqli_query($conn, "INSERT INTO kas (id_kas, keterangan, tanggal, jumlah, tipe) VALUES ('$id_kas_otomatis', '$ket', '$tgl', '$jml', '$tipe')");
     header("Location: index.php"); exit;
 }
@@ -118,13 +124,17 @@ if (isset($_POST['tambah_gallery'])) {
     // ID Otomatis PHP untuk mengakali TiDB Cloud
     $id_gallery_otomatis = time();
     
-    $new_file = ($_FILES['foto']['name'] != "") ? uniqid() . "_" . $_FILES['foto']['name'] : "default_gallery.jpg";
+    // LOGIKA BASE64: Mengonversi file galeri menjadi string teks panjang
+    $foto_data = "default_gallery.jpg"; // fallback jika tidak memilih foto
+    if (isset($_FILES['foto']) && $_FILES['foto']['tmp_name'] != "") {
+        $path = $_FILES['foto']['tmp_name'];
+        $type = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
     
-    // Dimatikan karena Vercel Read-Only
-    // move_uploaded_file($_FILES['foto']['tmp_name'], __DIR__ . '/../../assets/gallery/' . $new_file);
-    
-    // Menambahkan id_gallery ke dalam INSERT
-    mysqli_query($conn, "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$new_file', '$caption')");
+    // Menyimpan teks string gambar $foto_data ke kolom foto
+    mysqli_query($conn, "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$foto_data', '$caption')");
     header("Location: index.php"); exit;
 }
 
