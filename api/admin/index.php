@@ -423,7 +423,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
                 <?php $qs = mysqli_query($conn, "SELECT * FROM sponsors ORDER BY id_sponsor DESC"); while($s = mysqli_fetch_assoc($qs)) { ?>
                 <div class="glass p-4 rounded-2xl border-white/5 flex flex-col items-center relative group">
                     <a href="?hapus_sponsor=<?php echo $s['id_sponsor']; ?>" onclick="return confirm('Hapus partner?')" class="absolute top-1 right-1 text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-circle-xmark text-xs"></i></a>
-                    <img src="../assets/sponsors/<?php echo $s['logo_icon']; ?>" class="w-10 h-10 object-contain mb-2">
+                    <img src="<?php echo $row['logo_icon']; ?>" alt="Logo Sponsor" style="width: 50px; height: 50px; object-fit: contain;">
                     <p class="text-[9px] font-bold uppercase text-gray-400"><?php echo $s['nama_sponsor']; ?></p>
                 </div>
                 <?php } ?>
