@@ -60,7 +60,10 @@ if (isset($_POST['tambah_event'])) {
 
 if (isset($_POST['tambah_venue'])) {
     $nama_v = mysqli_real_escape_string($conn, $_POST['nama_venue']);
-    $kat_v = $_POST['kategori_sport']; // SINKRON DENGAN NAME DI HTML
+    
+    // Solusi toleran: Mau form lama atau form baru yang terbaca browser, PHP tetap aman nangkap datanya
+    $kat_v = isset($_POST['kategori_sport']) ? $_POST['kategori_sport'] : (isset($_POST['kategori_venue']) ? $_POST['kategori_venue'] : 'Sepakbola');
+    
     $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
     $id_venue_otomatis = time(); 
@@ -73,7 +76,6 @@ if (isset($_POST['tambah_venue'])) {
         $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    // SESUAI STRUKTUR COLUMNS: id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue
     mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')");
     header("Location: index.php#venues"); exit;
 }
