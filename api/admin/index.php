@@ -60,7 +60,7 @@ if (isset($_POST['tambah_event'])) {
 
 if (isset($_POST['tambah_venue'])) {
     $nama_v = mysqli_real_escape_string($conn, $_POST['nama_venue']);
-    $kat_v = $_POST['kategori_venue'];
+    $kat_v = $_POST['kategori_sport']; // SINKRON DENGAN NAME DI HTML
     $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
     $id_venue_otomatis = time(); 
@@ -73,6 +73,7 @@ if (isset($_POST['tambah_venue'])) {
         $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
+    // SESUAI STRUKTUR COLUMNS: id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue
     mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')");
     header("Location: index.php#venues"); exit;
 }
@@ -89,7 +90,8 @@ if (isset($_POST['tambah_sponsor'])) {
         $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '$foto_data')");
+    // SESUAI STRUKTUR COLUMNS: id_sponsor, nama_sponsor, link_website, logo_icon (link_website diisi kosong dulu)
+    mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, link_website, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '', '$foto_data')");
     header("Location: index.php#sponsors"); exit;
 }
 
@@ -116,6 +118,7 @@ if (isset($_POST['tambah_gallery'])) {
         $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
+    // SESUAI STRUKTUR COLUMNS: id_gallery, foto, caption
     mysqli_query($conn, "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$foto_data', '$caption')");
     header("Location: index.php#gallery"); exit;
 }
@@ -152,7 +155,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | <?php echo $setting['nama_website']; ?></title>
-    <link rel="icon" type="image/png" href="../assets/<?php echo $setting['logo_website']; ?>">
+    <link class="favicon" rel="icon" type="image/png" href="../assets/<?php echo $setting['logo_website']; ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -356,7 +359,11 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
         <div id="section-venues" class="spa-section">
             <form action="" method="POST" enctype="multipart/form-data" class="glass p-5 rounded-2xl mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
                 <input type="text" name="nama_venue" required placeholder="Nama Venue" class="bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-white">
-                <select name="kategori_venue" class="bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-gray-400"><option value="Sepakbola">Sepakbola</option><option value="Futsal">Futsal</option><option value="Minisoccer">Minisoccer</option></select>
+                <select name="kategori_sport" class="bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-gray-400">
+                    <option value="Sepakbola">Sepakbola</option>
+                    <option value="Futsal">Futsal</option>
+                    <option value="Minisoccer">Minisoccer</option>
+                </select>
                 <input type="text" name="alamat" required placeholder="Alamat" class="bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-white">
                 <input type="text" name="maps_link" placeholder="Link Maps" class="bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-white">
                 <input type="file" name="foto_venue" required class="bg-white/5 border border-white/10 p-2 rounded-xl text-[10px] text-gray-400">
@@ -424,7 +431,6 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
     <script>
         function showSection(sectionId) {
-            // Ubah hash URL browser secara dinamis agar saat di-refresh posisi tab terkunci
             window.location.hash = sectionId;
 
             document.querySelectorAll('.spa-section').forEach(section => {
@@ -480,13 +486,12 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
         setInterval(updateClock, 1000);
         updateClock();
 
-        // LOGIKA DETEKSI AUTOMATIS URL HASH SAAT HALAMAN SELESAI MEMUAT (RELOAD)
         window.addEventListener('DOMContentLoaded', () => {
-            const currentHash = window.location.hash.substring(1); // Ambil teks setelah tanda #
+            const currentHash = window.location.hash.substring(1);
             if (currentHash) {
-                showSection(currentHash); // Buka section sesuai hash redirect PHP
+                showSection(currentHash);
             } else {
-                showSection('dashboard'); // Default awal jika tidak ada hash
+                showSection('dashboard');
             }
         });
     </script>
