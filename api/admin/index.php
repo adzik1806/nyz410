@@ -406,7 +406,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
                 <?php $gl = mysqli_query($conn, "SELECT * FROM gallery ORDER BY id_gallery DESC");
                 while($rg = mysqli_fetch_assoc($gl)){ ?>
                 <div class="relative group aspect-square overflow-hidden rounded-xl border border-white/5">
-                    <img src="../assets/gallery/<?php echo $rg['foto']; ?>" class="w-full h-full object-cover">
+                    <img src="<?php echo $row['foto']; ?>" alt="Foto Gallery" style="width: 100%; height: auto; border-radius: 8px;">
                     <a href="?hapus_gallery=<?php echo $rg['id_gallery']; ?>" onclick="return confirm('Hapus foto?')" class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center"><i class="fa-solid fa-trash text-white text-xs"></i></a>
                 </div>
                 <?php } ?>
