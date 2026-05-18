@@ -64,24 +64,23 @@ if (isset($_POST['tambah_venue'])) {
     $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
     
-    // Tetap buat nama file acak agar tersimpan di DB, atau beri nama default jika kosong
+    // Pembuatan ID unik otomatis lewat PHP untuk mengakali TiDB Cloud
+    $id_venue_otomatis = time(); 
+    
     $new_foto = ($_FILES['foto_venue']['name'] != "") ? uniqid() . "_" . $_FILES['foto_venue']['name'] : "default_venue.jpg";
     
-    // DINONAKTIFKAN karena Vercel bersifat Read-Only
+    // Tetap dimatikan karena Vercel Read-Only
     // move_uploaded_file($_FILES['foto_venue']['tmp_name'], __DIR__ . '/../../assets/venues/' . $new_foto);
     
-    mysqli_query($conn, "INSERT INTO venues (nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$nama_v', '$kat_v', '$alamat_v', '$maps', '$new_foto')");
+    // KITA TAMBAHKAN id_venue DI QUERY INSERT
+    mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$new_foto')");
     header("Location: index.php"); exit;
 }
 
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
-    
-    $new_file = ($_FILES['logo_sponsor']['name'] != "") ? uniqid() . "_" . $_FILES['logo_sponsor']['name'] : "default_sponsor.png";
-    
-    // DINONAKTIFKAN karena Vercel bersifat Read-Only
-    // move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], __DIR__ . '/../../assets/sponsors/' . $new_file);
-    
+    $new_file = uniqid() . "_" . $_FILES['logo_sponsor']['name'];
+    move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], __DIR__ . '/../../assets/sponsors/' . $new_file);
     mysqli_query($conn, "INSERT INTO sponsors (nama_sponsor, logo_icon) VALUES ('$nama_s', '$new_file')");
     header("Location: index.php"); exit;
 }
@@ -97,12 +96,8 @@ if (isset($_POST['tambah_kas'])) {
 
 if (isset($_POST['tambah_gallery'])) {
     $caption = mysqli_real_escape_string($conn, $_POST['caption']);
-    
-    $new_file = ($_FILES['foto']['name'] != "") ? uniqid() . "_" . $_FILES['foto']['name'] : "default_gallery.jpg";
-    
-    // DINONAKTIFKAN karena Vercel bersifat Read-Only
-    // move_uploaded_file($_FILES['foto']['tmp_name'], __DIR__ . '/../../assets/gallery/' . $new_file);
-    
+    $new_file = uniqid() . "_" . $_FILES['foto']['name'];
+    move_uploaded_file($_FILES['foto']['tmp_name'], __DIR__ . '/../../assets/gallery/' . $new_file);
     mysqli_query($conn, "INSERT INTO gallery (foto, caption) VALUES ('$new_file', '$caption')");
     header("Location: index.php"); exit;
 }
@@ -112,13 +107,9 @@ if (isset($_POST['update_settings'])) {
     $web_desc = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     $web_wa   = mysqli_real_escape_string($conn, $_POST['wa_admin']);
     mysqli_query($conn, "UPDATE settings SET nama_website='$web_name', deskripsi_website='$web_desc', wa_admin='$web_wa', stats_member='".$_POST['stats_member']."', stats_venue='".$_POST['stats_venue']."' WHERE id_setting=1");
-    
     if($_FILES['logo_web']['name'] != "") {
         $logo_name = uniqid() . "_" . $_FILES['logo_web']['name'];
-        
-        // DINONAKTIFKAN karena Vercel bersifat Read-Only
-        // move_uploaded_file($_FILES['logo_web']['tmp_name'], __DIR__ . '/../../assets/' . $logo_name);
-        
+        move_uploaded_file($_FILES['logo_web']['tmp_name'], __DIR__ . '/../../assets/' . $logo_name);
         mysqli_query($conn, "UPDATE settings SET logo_website='$logo_name' WHERE id_setting=1");
     }
     header("Location: index.php"); exit;
