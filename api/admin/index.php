@@ -84,15 +84,16 @@ if (isset($_POST['tambah_venue'])) {
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
     
-    // ID Otomatis PHP untuk mengakali TiDB Cloud
+    // 1. BUAT ID OTOMATIS LEWAT PHP UNTUK MENGAKALI TIDB CLOUD
     $id_sponsor_otomatis = time();
     
+    // 2. CEK APAKAH ADA FILE YANG DIUPLOAD
     $new_file = ($_FILES['logo_sponsor']['name'] != "") ? uniqid() . "_" . $_FILES['logo_sponsor']['name'] : "default_sponsor.png";
     
-    // Dimatikan karena Vercel Read-Only
+    // 3. DIMATIKAN (DIBERI //) KARENA VERCEL BERSIFAT READ-ONLY
     // move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], __DIR__ . '/../../assets/sponsors/' . $new_file);
     
-    // Menambahkan id_sponsor ke dalam INSERT
+    // 4. MASUKKAN id_sponsor KE DALAM QUERY INSERT
     mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '$new_file')");
     header("Location: index.php"); exit;
 }
