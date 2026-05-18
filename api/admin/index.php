@@ -388,7 +388,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <?php $qv = mysqli_query($conn, "SELECT * FROM venues ORDER BY id_venue DESC"); while($v = mysqli_fetch_assoc($qv)) { ?>
                 <div class="glass p-3 rounded-2xl flex items-center gap-3 border-white/5 group">
-                    <img src="../assets/venues/<?php echo $v['foto_venue']; ?>" class="w-14 h-14 object-cover rounded-xl border border-white/10 shadow-lg">
+                    <img src="<?php echo $row['foto_venue']; ?>" alt="Foto Venue" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
                     <div class="flex-1"><h4 class="font-bold uppercase text-[11px] text-white"><?php echo $v['nama_venue']; ?></h4><p class="text-[9px] text-gray-500 italic"><?php echo $v['alamat_venue']; ?></p></div>
                     <a href="?hapus_venue=<?php echo $v['id_venue']; ?>" onclick="return confirm('Hapus venue?')" class="text-red-500/50 hover:text-red-500 transition-colors px-2"><i class="fa-solid fa-trash-can text-sm"></i></a>
                 </div>
