@@ -54,7 +54,12 @@ if (isset($_POST['tambah_event'])) {
     $tanggal = $_POST['tanggal'];
     $jam = $_POST['jam'];
     $harga = ($kategori == 'Futsal') ? $_POST['harga_flat'] : $_POST['harga_pemain'];
-    mysqli_query($conn, "INSERT INTO events (judul_event, kategori, lokasi, tanggal, jam, harga, status_event) VALUES ('$judul', '$kategori', '$lokasi', '$tanggal', '$jam', '$harga', 'tersedia')");
+    
+    // ID Otomatis PHP untuk mengakali TiDB Cloud
+    $id_event_otomatis = time();
+    
+    // Menambahkan id_event ke dalam INSERT
+    mysqli_query($conn, "INSERT INTO events (id_event, judul_event, kategori, lokasi, tanggal, jam, harga, status_event) VALUES ('$id_event_otomatis', '$judul', '$kategori', '$lokasi', '$tanggal', '$jam', '$harga', 'tersedia')");
     header("Location: index.php"); exit;
 }
 
@@ -72,16 +77,23 @@ if (isset($_POST['tambah_venue'])) {
     // Tetap dimatikan karena Vercel Read-Only
     // move_uploaded_file($_FILES['foto_venue']['tmp_name'], __DIR__ . '/../../assets/venues/' . $new_foto);
     
-    // KITA TAMBAHKAN id_venue DI QUERY INSERT
     mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$new_foto')");
     header("Location: index.php"); exit;
 }
 
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
-    $new_file = uniqid() . "_" . $_FILES['logo_sponsor']['name'];
-    move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], __DIR__ . '/../../assets/sponsors/' . $new_file);
-    mysqli_query($conn, "INSERT INTO sponsors (nama_sponsor, logo_icon) VALUES ('$nama_s', '$new_file')");
+    
+    // ID Otomatis PHP untuk mengakali TiDB Cloud
+    $id_sponsor_otomatis = time();
+    
+    $new_file = ($_FILES['logo_sponsor']['name'] != "") ? uniqid() . "_" . $_FILES['logo_sponsor']['name'] : "default_sponsor.png";
+    
+    // Dimatikan karena Vercel Read-Only
+    // move_uploaded_file($_FILES['logo_sponsor']['tmp_name'], __DIR__ . '/../../assets/sponsors/' . $new_file);
+    
+    // Menambahkan id_sponsor ke dalam INSERT
+    mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '$new_file')");
     header("Location: index.php"); exit;
 }
 
@@ -90,15 +102,28 @@ if (isset($_POST['tambah_kas'])) {
     $jml = $_POST['jumlah'];
     $tgl = $_POST['tanggal'];
     $tipe = $_POST['tipe'];
-    mysqli_query($conn, "INSERT INTO kas (keterangan, tanggal, jumlah, tipe) VALUES ('$ket', '$tgl', '$jml', '$tipe')");
+    
+    // ID Otomatis PHP untuk mengakali TiDB Cloud
+    $id_kas_otomatis = time();
+    
+    // Menambahkan id_kas ke dalam INSERT
+    mysqli_query($conn, "INSERT INTO kas (id_kas, keterangan, tanggal, jumlah, tipe) VALUES ('$id_kas_otomatis', '$ket', '$tgl', '$jml', '$tipe')");
     header("Location: index.php"); exit;
 }
 
 if (isset($_POST['tambah_gallery'])) {
     $caption = mysqli_real_escape_string($conn, $_POST['caption']);
-    $new_file = uniqid() . "_" . $_FILES['foto']['name'];
-    move_uploaded_file($_FILES['foto']['tmp_name'], __DIR__ . '/../../assets/gallery/' . $new_file);
-    mysqli_query($conn, "INSERT INTO gallery (foto, caption) VALUES ('$new_file', '$caption')");
+    
+    // ID Otomatis PHP untuk mengakali TiDB Cloud
+    $id_gallery_otomatis = time();
+    
+    $new_file = ($_FILES['foto']['name'] != "") ? uniqid() . "_" . $_FILES['foto']['name'] : "default_gallery.jpg";
+    
+    // Dimatikan karena Vercel Read-Only
+    // move_uploaded_file($_FILES['foto']['tmp_name'], __DIR__ . '/../../assets/gallery/' . $new_file);
+    
+    // Menambahkan id_gallery ke dalam INSERT
+    mysqli_query($conn, "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$new_file', '$caption')");
     header("Location: index.php"); exit;
 }
 
@@ -107,9 +132,13 @@ if (isset($_POST['update_settings'])) {
     $web_desc = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     $web_wa   = mysqli_real_escape_string($conn, $_POST['wa_admin']);
     mysqli_query($conn, "UPDATE settings SET nama_website='$web_name', deskripsi_website='$web_desc', wa_admin='$web_wa', stats_member='".$_POST['stats_member']."', stats_venue='".$_POST['stats_venue']."' WHERE id_setting=1");
+    
     if($_FILES['logo_web']['name'] != "") {
         $logo_name = uniqid() . "_" . $_FILES['logo_web']['name'];
-        move_uploaded_file($_FILES['logo_web']['tmp_name'], __DIR__ . '/../../assets/' . $logo_name);
+        
+        // Dimatikan karena Vercel Read-Only
+        // move_uploaded_file($_FILES['logo_web']['tmp_name'], __DIR__ . '/../../assets/' . $logo_name);
+        
         mysqli_query($conn, "UPDATE settings SET logo_website='$logo_name' WHERE id_setting=1");
     }
     header("Location: index.php"); exit;
