@@ -2,24 +2,21 @@
 // 1. Koneksi dan Ambil Pengaturan Website Terpusat
 include 'koneksi/koneksi.php'; 
 
-try {
-    // Ambil data setting (Identity Website & About Us Stats)
-    $stmt_setting = $conn->query("SELECT * FROM settings WHERE id_setting = 1");
-    $setting = $stmt_setting->fetch();
+// Menggunakan MySQLi sesuai dengan koneksi.php
+// Ambil data setting
+$query_set = mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1");
+$setting = mysqli_fetch_assoc($query_set);
 
-    // Hitung Saldo Kas Aktif secara Realtime
-    $stmt_m = $conn->query("SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'");
-    $m = $stmt_m->fetch();
+// Hitung Saldo Kas Masuk
+$q_m = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'");
+$m = mysqli_fetch_assoc($q_m);
 
-    $stmt_k = $conn->query("SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'");
-    $k = $stmt_k->fetch();
+// Hitung Saldo Kas Keluar
+$q_k = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'");
+$k = mysqli_fetch_assoc($q_k);
 
-    $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
-
-} catch (PDOException $e) {
-    // Jika ada error query, akan memunculkan pesan tanpa merusak halaman
-    echo "Gagal mengambil data: " . $e->getMessage();
-}
+// Hitung Saldo Akhir
+$saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
