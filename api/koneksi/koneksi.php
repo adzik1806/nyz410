@@ -5,15 +5,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Data baru dari akun Supabase kamu
-$host     = "db.ahsuqcloonhvjhgwpwgo.supabase.co"; 
-$port     = "5432";
+// SUDAH DIUBAH KE JALUR POOLER IPV4 (Mengatasi error Vercel)
+$host     = "aws-0-ap-southeast-1.pooler.supabase.com"; 
+$port     = "6543"; // Wajib port 6543 untuk connection pooling
 $dbname   = "postgres";
-$user     = "postgres"; 
-$password = "Adzikahmad0896"; // Ganti dengan password database buatanmu
+$user     = "postgres.ahsuqcloonhvjhgwpwgo"; // Wajib menggunakan Project ID lengkap kamu
+$password = "Adzikahmad0896"; 
 
 try {
-    // Koneksi menggunakan PDO PostgreSQL (Otomatis mendukung SSL secure transport)
+    // Koneksi menggunakan PDO PostgreSQL lewat jalur Pooler IPv4
     $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;";
     $conn = new PDO($dsn, $user, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
