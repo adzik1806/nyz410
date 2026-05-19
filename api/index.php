@@ -1,23 +1,23 @@
 <?php 
-// 1. Koneksi dan Ambil Pengaturan Website Terpusat
+// 1. Koneksi Database
 include 'koneksi/koneksi.php'; 
 
-// Menggunakan MySQLi sesuai dengan koneksi.php
-// Ambil data setting
-$query_set = mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1");
-$setting = mysqli_fetch_assoc($query_set);
+// 2. Ambil data setting (Gunakan mysqli_fetch_assoc)
+$q_setting = mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1");
+$setting = mysqli_fetch_assoc($q_setting);
 
-// Hitung Saldo Kas Masuk
+// 3. Hitung Saldo Kas Masuk
 $q_m = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'");
 $m = mysqli_fetch_assoc($q_m);
 
-// Hitung Saldo Kas Keluar
+// 4. Hitung Saldo Kas Keluar
 $q_k = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'");
 $k = mysqli_fetch_assoc($q_k);
 
-// Hitung Saldo Akhir
+// 5. Hitung Saldo Akhir
 $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 ?>
+
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
 <head>
