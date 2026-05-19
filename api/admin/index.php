@@ -61,7 +61,6 @@ if (isset($_POST['tambah_event'])) {
 if (isset($_POST['tambah_venue'])) {
     $nama_v = mysqli_real_escape_string($conn, $_POST['nama_venue']);
     
-    // AMANKAN KATEGORI: Jika kosong atau tidak ada di form, langsung set ke 'Sepakbola'
     $kat_v = 'Sepakbola'; 
     if (isset($_POST['kategori_sport']) && !empty(trim($_POST['kategori_sport']))) {
         $kat_v = mysqli_real_escape_string($conn, $_POST['kategori_sport']);
@@ -73,7 +72,7 @@ if (isset($_POST['tambah_venue'])) {
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
     $id_venue_otomatis = time(); 
     
-    // Proses Foto Base64
+    // Penanganan Foto tanpa simpan fisik ke Vercel (Base64)
     $foto_data = "default_venue.jpg"; 
     if (isset($_FILES['foto_venue']) && $_FILES['foto_venue']['tmp_name'] != "") {
         $path = $_FILES['foto_venue']['tmp_name'];
@@ -82,7 +81,6 @@ if (isset($_POST['tambah_venue'])) {
         $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    // Pastikan susunan kolom sesuai dengan database: id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue
     $query = "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) 
               VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')";
               
@@ -93,19 +91,23 @@ if (isset($_POST['tambah_venue'])) {
 
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
+    $link_w = isset($_POST['link_website']) ? mysqli_real_escape_string($conn, $_POST['link_website']) : '#';
     $id_sponsor_otomatis = time();
     
-    $foto_data = "default_sponsor.png"; 
+    $logo_data = "default_sponsor.jpg";
     if (isset($_FILES['logo_sponsor']) && $_FILES['logo_sponsor']['tmp_name'] != "") {
         $path = $_FILES['logo_sponsor']['tmp_name'];
         $type = pathinfo($_FILES['logo_sponsor']['name'], PATHINFO_EXTENSION);
         $data = file_get_contents($path);
-        $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        $logo_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    // SESUAI STRUKTUR COLUMNS: id_sponsor, nama_sponsor, link_website, logo_icon (link_website diisi kosong dulu)
-    mysqli_query($conn, "INSERT INTO sponsors (id_sponsor, nama_sponsor, link_website, logo_icon) VALUES ('$id_sponsor_otomatis', '$nama_s', '', '$foto_data')");
-    header("Location: index.php#sponsors"); exit;
+    $query = "INSERT INTO sponsors (id_sponsor, nama_sponsor, link_website, logo_icon) 
+              VALUES ('$id_sponsor_otomatis', '$nama_s', '$link_w', '$logo_data')";
+              
+    mysqli_query($conn, $query);
+    header("Location: index.php#sponsors");
+    exit;
 }
 
 if (isset($_POST['tambah_kas'])) {
@@ -123,17 +125,20 @@ if (isset($_POST['tambah_gallery'])) {
     $caption = mysqli_real_escape_string($conn, $_POST['caption']);
     $id_gallery_otomatis = time();
     
-    $foto_data = "default_gallery.jpg"; 
-    if (isset($_FILES['foto']) && $_FILES['foto']['tmp_name'] != "") {
-        $path = $_FILES['foto']['tmp_name'];
-        $type = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+    $gallery_data = "";
+    if (isset($_FILES['foto_galeri']) && $_FILES['foto_galeri']['tmp_name'] != "") {
+        $path = $_FILES['foto_galeri']['tmp_name'];
+        $type = pathinfo($_FILES['foto_galeri']['name'], PATHINFO_EXTENSION);
         $data = file_get_contents($path);
-        $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        $gallery_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    // SESUAI STRUKTUR COLUMNS: id_gallery, foto, caption
-    mysqli_query($conn, "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$foto_data', '$caption')");
-    header("Location: index.php#gallery"); exit;
+    if (!empty($gallery_data)) {
+        $query = "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$gallery_data', '$caption')";
+        mysqli_query($conn, $query);
+    }
+    header("Location: index.php#gallery");
+    exit;
 }
 
 if (isset($_POST['update_settings'])) {
