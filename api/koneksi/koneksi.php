@@ -6,11 +6,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // SUDAH DIUBAH KE JALUR POOLER IPV4 (Mengatasi error Vercel)
-$host     = "aws-0-ap-southeast-1.pooler.supabase.com"; 
-$port     = "6543"; // Wajib port 6543 untuk connection pooling
+$host     = "db.ahsuqcloonhvjhgwpwgo.supabase.co"; 
+$port     = "5432"; 
 $dbname   = "postgres";
-$user     = "postgres.ahsuqcloonhvjhgwpwgo"; // Wajib menggunakan Project ID lengkap kamu
-$password = "Adzikahmad0896"; 
+$user     = "postgres"; 
+$password = "Adzikahmad0896";
 
 try {
     // Koneksi menggunakan PDO PostgreSQL lewat jalur Pooler IPv4
