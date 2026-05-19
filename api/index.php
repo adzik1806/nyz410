@@ -2,13 +2,24 @@
 // 1. Koneksi dan Ambil Pengaturan Website Terpusat
 include 'koneksi/koneksi.php'; 
 
-// Ambil data setting (Identity Website & About Us Stats)
-$setting = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1"));
+try {
+    // Ambil data setting (Identity Website & About Us Stats)
+    $stmt_setting = $conn->query("SELECT * FROM settings WHERE id_setting = 1");
+    $setting = $stmt_setting->fetch();
 
-// Hitung Saldo Kas Aktif secara Realtime
-$m = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'"));
-$k = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'"));
-$saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
+    // Hitung Saldo Kas Aktif secara Realtime
+    $stmt_m = $conn->query("SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'");
+    $m = $stmt_m->fetch();
+
+    $stmt_k = $conn->query("SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'");
+    $k = $stmt_k->fetch();
+
+    $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
+
+} catch (PDOException $e) {
+    // Jika ada error query, akan memunculkan pesan tanpa merusak halaman
+    echo "Gagal mengambil data: " . $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
