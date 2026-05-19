@@ -4,21 +4,22 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_only_cookies', 1);
     session_start();
 }
-// Masukkan data asli dari akun TiDB Cloud kamu
-$host = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com"; 
-$user = "3dnB917rPV4v88s.root"; // Pastikan diisi username root lengkapmu dari TiDB
-$pass = "dL48mU1Ba0xK2lKo"; // Pastikan diisi password asli TiDB-mu
-$db   = "komunitas_bola"; 
-$port = 4000; 
 
-// 1. Inisialisasi objek MySQLi
-$conn = mysqli_init();
+// Data baru dari akun Supabase kamu
+$host     = "db.ahsuqcloonhvjhgwpwgo.supabase.co"; 
+$port     = "5432";
+$dbname   = "postgres";
+$user     = "postgres"; 
+$password = "Adzikahmad0896"; // Ganti dengan password database buatanmu
 
-// 2. Aktifkan bendera SSL agar koneksi aman (Mengatasi error insecure transport)
-mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
-
-// 3. Lakukan koneksi ke TiDB Cloud dengan port 4000
-if (!mysqli_real_connect($conn, $host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL)) {
-    die("Koneksi Database Gagal: " . mysqli_connect_error());
+try {
+    // Koneksi menggunakan PDO PostgreSQL (Otomatis mendukung SSL secure transport)
+    $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;";
+    $conn = new PDO($dsn, $user, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (PDOException $e) {
+    die("Koneksi ke Supabase Gagal: " . $e->getMessage());
 }
 ?>
