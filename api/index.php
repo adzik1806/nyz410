@@ -1,33 +1,22 @@
 <?php 
-// 1. Koneksi Database
 include 'koneksi/koneksi.php'; 
 
-// 2. Ambil data setting (Ditambahkan pencegahan error)
-// Kita beri nilai array kosong agar tidak error jika database gagal
-$setting = [
-    'nama_website' => 'My Community',
+// Ambil data setting
+$q_setting = mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1");
+$setting = mysqli_fetch_assoc($q_setting) ?? [
+    'nama_website' => 'Community Hub', 
+    'deskripsi_website' => 'Multisport Community', 
+    'wa_admin' => '6281291992648',
     'logo_website' => '',
-    'deskripsi_website' => 'Selamat Datang',
-    'wa_admin' => '628xxxxxxx',
     'stats_member' => '0',
     'stats_venue' => '0'
 ];
 
-$q_setting = mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1");
-if($q_setting && mysqli_num_rows($q_setting) > 0) {
-    $setting = mysqli_fetch_assoc($q_setting);
-}
-
-// 3. Pastikan query lainnya juga aman
-$m = ['total' => 0];
-$k = ['total' => 0];
-
+// Saldo Kas
 $q_m = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'");
-if($q_m) $m = mysqli_fetch_assoc($q_m);
-
+$m = mysqli_fetch_assoc($q_m);
 $q_k = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'");
-if($q_k) $k = mysqli_fetch_assoc($q_k);
-
+$k = mysqli_fetch_assoc($q_k);
 $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 ?>
 
@@ -196,7 +185,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
                     while($s = mysqli_fetch_assoc($sql_marquee)): ?>
                         <div class="sponsor-item">
                             <div class="sponsor-box">
-                                <img src="assets/sponsors/<?php echo $s['logo_icon']; ?>" class="max-h-full max-w-full object-contain" alt="Partner">
+                                <img src="<?php echo $s['logo_icon']; ?>" class="max-h-full max-w-full object-contain" alt="Partner">
                             </div>
                             <span class="hidden md:block font-black uppercase tracking-[0.4em] text-[10px] text-yellow-500/60"><?php echo $s['nama_sponsor']; ?></span>
                         </div>
@@ -251,7 +240,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
                 <div class="glass p-5 rounded-[35px] group transition-all hover:border-yellow-500/30 flex flex-col h-full">
                     <div class="w-full h-44 overflow-hidden rounded-3xl mb-6 relative border border-white/5 shadow-inner">
                         <?php if(!empty($v['foto_venue']) && file_exists('assets/venues/'.$v['foto_venue'])): ?>
-                            <img src="assets/venues/<?php echo $v['foto_venue']; ?>" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110" alt="Venue">
+                            <img src="<?php echo $v['foto_venue']; ?>" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110" alt="Venue">
                         <?php else: ?>
                             <div class="w-full h-full bg-white/5 flex items-center justify-center text-yellow-500/10 text-6xl">
                                 <i class="fa-solid fa-building-shield"></i>
@@ -317,7 +306,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             $gal = mysqli_query($conn, "SELECT * FROM gallery ORDER BY id_gallery DESC LIMIT 8");
             while($rg = mysqli_fetch_assoc($gal)): ?>
             <div class="group relative overflow-hidden rounded-3xl h-64 shadow-xl border border-white/5" data-aos="zoom-in">
-                <img src="assets/gallery/<?php echo $rg['foto']; ?>" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110">
+                <img src="<?php echo $rg['foto']; ?>" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110">
                 <div class="absolute inset-0 bg-gradient-to-t from-black opacity-0 group-hover:opacity-90 transition-all flex items-end p-6">
                     <p class="font-bold text-[10px] uppercase tracking-widest text-yellow-500"><?php echo $rg['caption']; ?></p>
                 </div>
@@ -332,7 +321,7 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
                 <div class="space-y-6">
                     <div class="flex items-center gap-3">
-                        <img src="assets/<?php echo $setting['logo_website']; ?>" class="h-10 object-contain" alt="Logo">
+                        <img src="<?php echo $setting['logo_website']; ?>" class="h-8 md:h-10 object-contain" alt="Logo">
                         <h2 class="text-2xl font-black text-gradient tracking-tighter uppercase"><?php echo $setting['nama_website']; ?></h2>
                     </div>
                     <p class="text-gray-500 text-sm leading-relaxed italic">"<?php echo $setting['deskripsi_website']; ?>"</p>
