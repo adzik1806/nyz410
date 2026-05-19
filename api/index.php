@@ -2,19 +2,32 @@
 // 1. Koneksi Database
 include 'koneksi/koneksi.php'; 
 
-// 2. Ambil data setting (Gunakan mysqli_fetch_assoc)
+// 2. Ambil data setting (Ditambahkan pencegahan error)
+// Kita beri nilai array kosong agar tidak error jika database gagal
+$setting = [
+    'nama_website' => 'My Community',
+    'logo_website' => '',
+    'deskripsi_website' => 'Selamat Datang',
+    'wa_admin' => '628xxxxxxx',
+    'stats_member' => '0',
+    'stats_venue' => '0'
+];
+
 $q_setting = mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1");
-$setting = mysqli_fetch_assoc($q_setting);
+if($q_setting && mysqli_num_rows($q_setting) > 0) {
+    $setting = mysqli_fetch_assoc($q_setting);
+}
 
-// 3. Hitung Saldo Kas Masuk
+// 3. Pastikan query lainnya juga aman
+$m = ['total' => 0];
+$k = ['total' => 0];
+
 $q_m = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'");
-$m = mysqli_fetch_assoc($q_m);
+if($q_m) $m = mysqli_fetch_assoc($q_m);
 
-// 4. Hitung Saldo Kas Keluar
 $q_k = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'");
-$k = mysqli_fetch_assoc($q_k);
+if($q_k) $k = mysqli_fetch_assoc($q_k);
 
-// 5. Hitung Saldo Akhir
 $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 ?>
 
