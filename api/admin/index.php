@@ -61,13 +61,19 @@ if (isset($_POST['tambah_event'])) {
 if (isset($_POST['tambah_venue'])) {
     $nama_v = mysqli_real_escape_string($conn, $_POST['nama_venue']);
     
-    // Solusi toleran: Mau form lama atau form baru yang terbaca browser, PHP tetap aman nangkap datanya
-    $kat_v = isset($_POST['kategori_sport']) ? $_POST['kategori_sport'] : (isset($_POST['kategori_venue']) ? $_POST['kategori_venue'] : 'Sepakbola');
+    // AMANKAN KATEGORI: Jika kosong atau tidak ada di form, langsung set ke 'Sepakbola'
+    $kat_v = 'Sepakbola'; 
+    if (isset($_POST['kategori_sport']) && !empty(trim($_POST['kategori_sport']))) {
+        $kat_v = mysqli_real_escape_string($conn, $_POST['kategori_sport']);
+    } elseif (isset($_POST['kategori_venue']) && !empty(trim($_POST['kategori_venue']))) {
+        $kat_v = mysqli_real_escape_string($conn, $_POST['kategori_venue']);
+    }
     
     $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
     $id_venue_otomatis = time(); 
     
+    // Proses Foto Base64
     $foto_data = "default_venue.jpg"; 
     if (isset($_FILES['foto_venue']) && $_FILES['foto_venue']['tmp_name'] != "") {
         $path = $_FILES['foto_venue']['tmp_name'];
@@ -76,8 +82,13 @@ if (isset($_POST['tambah_venue'])) {
         $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    mysqli_query($conn, "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')");
-    header("Location: index.php#venues"); exit;
+    // Pastikan susunan kolom sesuai dengan database: id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue
+    $query = "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) 
+              VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')";
+              
+    mysqli_query($conn, $query);
+    header("Location: index.php#venues"); 
+    exit;
 }
 
 if (isset($_POST['tambah_sponsor'])) {
