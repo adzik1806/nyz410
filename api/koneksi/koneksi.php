@@ -1,4 +1,5 @@
 <?php
+// Pastikan tidak ada spasi atau karakter aneh sebelum <?php
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_cookies', 1);
     ini_set('session.use_only_cookies', 1);
@@ -7,14 +8,13 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $host = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com"; 
 $user = "3dnB917rPV4v88s.root"; 
-$pass = "dL48mU1Ba0xK2lKo"; 
+$pass = "BerEuah4oOOVbE8x"; 
 $db   = "komunitas_bola"; 
 $port = 4000; 
 
-// Inisialisasi koneksi MySQLi
 $conn = mysqli_init();
 
-// Menghubungkan ke TiDB dengan SSL
+// Menghubungkan ke TiDB dengan SSL (Wajib untuk TiDB Cloud)
 mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
 
 if (!mysqli_real_connect($conn, $host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL)) {
