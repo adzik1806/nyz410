@@ -1,168 +1,84 @@
 <?php
-// 1. AKTIFKAN COOKIE SESSION BAWAAN DI VERCEL
+// 1. SESSION & PROTEKSI
 if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.use_cookies', 1);
-    ini_set('session.use_only_cookies', 1);
     session_start();
 }
 
-// 2. PROTEKSI AKSES & LOGIN CHECK
 if (!isset($_SESSION['admin']) && !isset($_COOKIE['admin_login'])) {
-    header("Location: login.php");
-    exit;
+    header("Location: login.php"); exit;
 }
 
-if (!isset($_SESSION['admin']) && isset($_COOKIE['admin_login'])) {
-    $_SESSION['admin'] = true;
-}
-
-// 3. AUTO-LOGOUT (3 Jam)
-$timeout = 10800; 
-if (isset($_COOKIE['last_activity'])) {
-    $elapsed_time = time() - $_COOKIE['last_activity'];
-    if ($elapsed_time > $timeout) {
-        session_unset(); 
-        session_destroy();
-        setcookie('admin_login', '', time() - 3600, '/');
-        setcookie('last_activity', '', time() - 3600, '/');
-        header("Location: login.php?pesan=expired");
-        exit;
-    }
-}
-setcookie('last_activity', time(), time() + $timeout, '/');
-
-// 4. FILE KONEKSI
 include __DIR__ . '/../koneksi/koneksi.php';
 
-// AMBIL DATA SETTING WEBSITE
-$setting = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1"));
-
-// LOGIKA DATABASE (STATISTIK DASHBOARD)
-$total_football = mysqli_num_rows(mysqli_query($conn, "SELECT id_event FROM events WHERE kategori='Sepakbola'"));
-$total_futsal   = mysqli_num_rows(mysqli_query($conn, "SELECT id_event FROM events WHERE kategori='Futsal'"));
-$total_minisoccer = mysqli_num_rows(mysqli_query($conn, "SELECT id_event FROM events WHERE kategori='Minisoccer'"));
-$total_venues   = mysqli_num_rows(mysqli_query($conn, "SELECT id_venue FROM venues"));
-$total_sponsors = mysqli_num_rows(mysqli_query($conn, "SELECT id_sponsor FROM sponsors"));
-
-// --- PROSES CRUD (REDIRECT DENGAN HASH AGAR STAY MENU) ---
-if (isset($_POST['tambah_event'])) {
-    $judul = mysqli_real_escape_string($conn, $_POST['judul']);
-    $kategori = $_POST['kategori'];
-    $lokasi = mysqli_real_escape_string($conn, $_POST['lokasi']);
-    $tanggal = $_POST['tanggal'];
-    $jam = $_POST['jam'];
-    $harga = ($kategori == 'Futsal') ? $_POST['harga_flat'] : $_POST['harga_pemain'];
-    
-    $id_event_otomatis = time();
-    mysqli_query($conn, "INSERT INTO events (id_event, judul_event, kategori, lokasi, tanggal, jam, harga, status_event) VALUES ('$id_event_otomatis', '$judul', '$kategori', '$lokasi', '$tanggal', '$jam', '$harga', 'tersedia')");
-    header("Location: index.php#schedules"); exit;
+// FUNGSI HELPER UNTUK GAMBAR (Agar tidak berulang-ulang)
+function prosesGambar($file_key) {
+    if (isset($_FILES[$file_key]) && $_FILES[$file_key]['error'] == 0) {
+        $data = file_get_contents($_FILES[$file_key]['tmp_name']);
+        $type = pathinfo($_FILES[$file_key]['name'], PATHINFO_EXTENSION);
+        return 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
+    return null;
 }
 
-if (isset($_POST['tambah_sponsor'])) {
-    $nama_sponsor = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
-    $link_website = mysqli_real_escape_string($conn, $_POST['link_website'] ?? '#');
+// 2. PROSES CRUD
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    $sponsor_data = "";
-    // Menangkap input file dari form
-    if (isset($_FILES['logo_icon']) && $_FILES['logo_icon']['tmp_name'] != "") {
-        $path = $_FILES['logo_icon']['tmp_name'];
-        $type = pathinfo($_FILES['logo_icon']['name'], PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $sponsor_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
+    // TAMBAH EVENT
+    if (isset($_POST['tambah_event'])) {
+        $judul = mysqli_real_escape_string($conn, $_POST['judul']);
+        $kategori = mysqli_real_escape_string($conn, $_POST['kategori']);
+        $lokasi = mysqli_real_escape_string($conn, $_POST['lokasi']);
+        $harga = ($kategori == 'Futsal') ? (int)$_POST['harga_flat'] : (int)$_POST['harga_pemain'];
+        mysqli_query($conn, "INSERT INTO events (id_event, judul_event, kategori, lokasi, tanggal, jam, harga, status_event) VALUES ('".time()."', '$judul', '$kategori', '$lokasi', '".$_POST['tanggal']."', '".$_POST['jam']."', '$harga', 'tersedia')");
+        $_SESSION['active_tab'] = 'schedules';
     }
-    
-    // Pastikan data tidak kosong sebelum insert
-    if (!empty($sponsor_data)) {
-        $query = "INSERT INTO sponsors (nama_sponsor, link_website, logo_icon) 
-                  VALUES ('$nama_sponsor', '$link_website', '$sponsor_data')";
-        mysqli_query($conn, $query);
-    }
-    
-    header("Location: index.php#sponsors");
-    exit;
-}
 
-if (isset($_POST['tambah_gallery'])) {
-    $caption = mysqli_real_escape_string($conn, $_POST['caption']);
-    
-    $gallery_data = "";
-    if (isset($_FILES['foto_galeri']) && $_FILES['foto_galeri']['tmp_name'] != "") {
-        $path = $_FILES['foto_galeri']['tmp_name'];
-        $type = pathinfo($_FILES['foto_galeri']['name'], PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $gallery_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
-    } elseif (isset($_FILES['foto']) && $_FILES['foto']['tmp_name'] != "") {
-        $path = $_FILES['foto']['tmp_name'];
-        $type = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $gallery_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
+    // TAMBAH SPONSOR
+    if (isset($_POST['tambah_sponsor'])) {
+        $nama = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
+        $link = mysqli_real_escape_string($conn, $_POST['link_website'] ?? '#');
+        $img = prosesGambar('logo_icon');
+        if ($img) {
+            mysqli_query($conn, "INSERT INTO sponsors (nama_sponsor, link_website, logo_icon) VALUES ('$nama', '$link', '$img')");
+        }
+        $_SESSION['active_tab'] = 'sponsors';
     }
-    
-    if (!empty($gallery_data)) {
-        $query = "INSERT INTO gallery (foto, caption) VALUES ('$gallery_data', '$caption')";
-        mysqli_query($conn, $query);
-    }
-    header("Location: index.php#gallery");
-    exit;
-}
 
-if (isset($_POST['tambah_kas'])) {
-    $ket = mysqli_real_escape_string($conn, $_POST['keterangan']);
-    $jml = $_POST['jumlah'];
-    $tgl = $_POST['tanggal'];
-    $tipe = $_POST['tipe'];
-    
-    $id_kas_otomatis = time();
-    mysqli_query($conn, "INSERT INTO kas (id_kas, keterangan, tanggal, jumlah, tipe) VALUES ('$id_kas_otomatis', '$ket', '$tgl', '$jml', '$tipe')");
-    header("Location: index.php#kas"); exit;
-}
+    // TAMBAH GALLERY
+    if (isset($_POST['tambah_gallery'])) {
+        $caption = mysqli_real_escape_string($conn, $_POST['caption']);
+        $img = prosesGambar('foto_galeri') ?? prosesGambar('foto');
+        if ($img) {
+            mysqli_query($conn, "INSERT INTO gallery (foto, caption) VALUES ('$img', '$caption')");
+        }
+        $_SESSION['active_tab'] = 'gallery';
+    }
 
-if (isset($_POST['tambah_venue'])) {
-    $nama_v = mysqli_real_escape_string($conn, $_POST['nama_venue']);
-    
-    // Solusi anti-error untuk menangkap kategori dari HTML form kamu
-    $kat_v = 'Sepakbola'; 
-    if (isset($_POST['kategori_sport']) && !empty(trim($_POST['kategori_sport']))) {
-        $kat_v = mysqli_real_escape_string($conn, $_POST['kategori_sport']);
-    } elseif (isset($_POST['kategori_venue']) && !empty(trim($_POST['kategori_venue']))) {
-        $kat_v = mysqli_real_escape_string($conn, $_POST['kategori_venue']);
-    } elseif (isset($_POST['kategori']) && !empty(trim($_POST['kategori']))) {
-        $kat_v = mysqli_real_escape_string($conn, $_POST['kategori']);
+    // TAMBAH KAS
+    if (isset($_POST['tambah_kas'])) {
+        mysqli_query($conn, "INSERT INTO kas (id_kas, keterangan, tanggal, jumlah, tipe) VALUES ('".time()."', '".mysqli_real_escape_string($conn, $_POST['keterangan'])."', '".$_POST['tanggal']."', '".(int)$_POST['jumlah']."', '".$_POST['tipe']."')");
+        $_SESSION['active_tab'] = 'kas';
     }
-    
-    $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
-    $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
-    
-    // Default jika tidak upload foto
-    $foto_data = ""; 
-    if (isset($_FILES['foto_venue']) && $_FILES['foto_venue']['tmp_name'] != "") {
-        $path = $_FILES['foto_venue']['tmp_name'];
-        $type = pathinfo($_FILES['foto_venue']['name'], PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
-    }
-    
-    // Insert tanpa menyertakan ID manual (menggunakan AUTO_INCREMENT database)
-    $query = "INSERT INTO venues (nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) 
-              VALUES ('$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')";
-              
-    mysqli_query($conn, $query);
-    header("Location: index.php#venues"); 
-    exit;
-}
 
-if (isset($_POST['update_settings'])) {
-    $web_name = mysqli_real_escape_string($conn, $_POST['nama_website']);
-    $web_desc = mysqli_real_escape_string($conn, $_POST['deskripsi']);
-    $web_wa   = mysqli_real_escape_string($conn, $_POST['wa_admin']);
-    mysqli_query($conn, "UPDATE settings SET nama_website='$web_name', deskripsi_website='$web_desc', wa_admin='$web_wa', stats_member='".$_POST['stats_member']."', stats_venue='".$_POST['stats_venue']."' WHERE id_setting=1");
-    
-    if($_FILES['logo_web']['name'] != "") {
-        $logo_name = uniqid() . "_" . $_FILES['logo_web']['name'];
-        mysqli_query($conn, "UPDATE settings SET logo_website='$logo_name' WHERE id_setting=1");
+    // TAMBAH VENUE
+    if (isset($_POST['tambah_venue'])) {
+        $nama = mysqli_real_escape_string($conn, $_POST['nama_venue']);
+        $kat = mysqli_real_escape_string($conn, $_POST['kategori_sport'] ?? 'Sepakbola');
+        $img = prosesGambar('foto_venue');
+        mysqli_query($conn, "INSERT INTO venues (nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$nama', '$kat', '".mysqli_real_escape_string($conn, $_POST['alamat'])."', '".mysqli_real_escape_string($conn, $_POST['maps_link'])."', '$img')");
+        $_SESSION['active_tab'] = 'venues';
     }
-    header("Location: index.php#settings"); exit;
+
+    // UPDATE SETTINGS
+    if (isset($_POST['update_settings'])) {
+        $n = mysqli_real_escape_string($conn, $_POST['nama_website']);
+        mysqli_query($conn, "UPDATE settings SET nama_website='$n', deskripsi_website='".mysqli_real_escape_string($conn, $_POST['deskripsi'])."', wa_admin='".mysqli_real_escape_string($conn, $_POST['wa_admin'])."' WHERE id_setting=1");
+        $_SESSION['active_tab'] = 'settings';
+    }
+
+    header("Location: index.php"); exit;
 }
+?>
 
 // LOGIKA HAPUS (DENGAN REDIRECT HASH)
 if (isset($_GET['hapus'])) { mysqli_query($conn, "DELETE FROM events WHERE id_event = ".intval($_GET['hapus'])); header("Location: index.php#schedules"); exit; }
