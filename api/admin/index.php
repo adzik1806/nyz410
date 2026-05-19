@@ -10,7 +10,16 @@ if (!isset($_SESSION['admin']) && !isset($_COOKIE['admin_login'])) {
 
 include __DIR__ . '/../koneksi/koneksi.php';
 
-// FUNGSI HELPER UNTUK GAMBAR (Agar tidak berulang-ulang)
+// --- TAMBAHAN UNTUK MENCEGAH ERROR UNDEFINED ---
+$setting = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM settings WHERE id_setting = 1")) ?? ['nama_website' => 'Admin', 'logo_website' => '', 'deskripsi_website' => '', 'wa_admin' => ''];
+$total_football = mysqli_num_rows(mysqli_query($conn, "SELECT id_event FROM events WHERE kategori='Sepakbola'"));
+$total_futsal   = mysqli_num_rows(mysqli_query($conn, "SELECT id_event FROM events WHERE kategori='Futsal'"));
+$total_minisoccer = mysqli_num_rows(mysqli_query($conn, "SELECT id_event FROM events WHERE kategori='Minisoccer'"));
+$total_venues   = mysqli_num_rows(mysqli_query($conn, "SELECT id_venue FROM venues"));
+$total_sponsors = mysqli_num_rows(mysqli_query($conn, "SELECT id_sponsor FROM sponsors"));
+// -----------------------------------------------
+
+// FUNGSI HELPER UNTUK GAMBAR
 function prosesGambar($file_key) {
     if (isset($_FILES[$file_key]) && $_FILES[$file_key]['error'] == 0) {
         $data = file_get_contents($_FILES[$file_key]['tmp_name']);
@@ -22,8 +31,6 @@ function prosesGambar($file_key) {
 
 // 2. PROSES CRUD
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    
-    // TAMBAH EVENT
     if (isset($_POST['tambah_event'])) {
         $judul = mysqli_real_escape_string($conn, $_POST['judul']);
         $kategori = mysqli_real_escape_string($conn, $_POST['kategori']);
@@ -32,55 +39,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         mysqli_query($conn, "INSERT INTO events (id_event, judul_event, kategori, lokasi, tanggal, jam, harga, status_event) VALUES ('".time()."', '$judul', '$kategori', '$lokasi', '".$_POST['tanggal']."', '".$_POST['jam']."', '$harga', 'tersedia')");
         $_SESSION['active_tab'] = 'schedules';
     }
-
-    // TAMBAH SPONSOR
     if (isset($_POST['tambah_sponsor'])) {
         $nama = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
-        $link = mysqli_real_escape_string($conn, $_POST['link_website'] ?? '#');
-        $img = prosesGambar('logo_icon');
-        if ($img) {
-            mysqli_query($conn, "INSERT INTO sponsors (nama_sponsor, link_website, logo_icon) VALUES ('$nama', '$link', '$img')");
-        }
+        $img = prosesGambar('logo_sponsor');
+        if ($img) mysqli_query($conn, "INSERT INTO sponsors (nama_sponsor, logo_icon) VALUES ('$nama', '$img')");
         $_SESSION['active_tab'] = 'sponsors';
     }
-
-    // TAMBAH GALLERY
     if (isset($_POST['tambah_gallery'])) {
         $caption = mysqli_real_escape_string($conn, $_POST['caption']);
-        $img = prosesGambar('foto_galeri') ?? prosesGambar('foto');
-        if ($img) {
-            mysqli_query($conn, "INSERT INTO gallery (foto, caption) VALUES ('$img', '$caption')");
-        }
+        $img = prosesGambar('foto');
+        if ($img) mysqli_query($conn, "INSERT INTO gallery (foto, caption) VALUES ('$img', '$caption')");
         $_SESSION['active_tab'] = 'gallery';
     }
-
-    // TAMBAH KAS
     if (isset($_POST['tambah_kas'])) {
         mysqli_query($conn, "INSERT INTO kas (id_kas, keterangan, tanggal, jumlah, tipe) VALUES ('".time()."', '".mysqli_real_escape_string($conn, $_POST['keterangan'])."', '".$_POST['tanggal']."', '".(int)$_POST['jumlah']."', '".$_POST['tipe']."')");
         $_SESSION['active_tab'] = 'kas';
     }
-
-    // TAMBAH VENUE
     if (isset($_POST['tambah_venue'])) {
         $nama = mysqli_real_escape_string($conn, $_POST['nama_venue']);
-        $kat = mysqli_real_escape_string($conn, $_POST['kategori_sport'] ?? 'Sepakbola');
+        $kat = mysqli_real_escape_string($conn, $_POST['kategori_sport']);
         $img = prosesGambar('foto_venue');
         mysqli_query($conn, "INSERT INTO venues (nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) VALUES ('$nama', '$kat', '".mysqli_real_escape_string($conn, $_POST['alamat'])."', '".mysqli_real_escape_string($conn, $_POST['maps_link'])."', '$img')");
         $_SESSION['active_tab'] = 'venues';
     }
-
-    // UPDATE SETTINGS
     if (isset($_POST['update_settings'])) {
-        $n = mysqli_real_escape_string($conn, $_POST['nama_website']);
-        mysqli_query($conn, "UPDATE settings SET nama_website='$n', deskripsi_website='".mysqli_real_escape_string($conn, $_POST['deskripsi'])."', wa_admin='".mysqli_real_escape_string($conn, $_POST['wa_admin'])."' WHERE id_setting=1");
+        mysqli_query($conn, "UPDATE settings SET nama_website='".mysqli_real_escape_string($conn, $_POST['nama_website'])."', deskripsi_website='".mysqli_real_escape_string($conn, $_POST['deskripsi'])."', wa_admin='".mysqli_real_escape_string($conn, $_POST['wa_admin'])."' WHERE id_setting=1");
         $_SESSION['active_tab'] = 'settings';
     }
-
     header("Location: index.php"); exit;
 }
-?>
 
-// LOGIKA HAPUS (DENGAN REDIRECT HASH)
+// LOGIKA HAPUS
 if (isset($_GET['hapus'])) { mysqli_query($conn, "DELETE FROM events WHERE id_event = ".intval($_GET['hapus'])); header("Location: index.php#schedules"); exit; }
 if (isset($_GET['hapus_venue'])) { mysqli_query($conn, "DELETE FROM venues WHERE id_venue = ".intval($_GET['hapus_venue'])); header("Location: index.php#venues"); exit; }
 if (isset($_GET['hapus_sponsor'])) { mysqli_query($conn, "DELETE FROM sponsors WHERE id_sponsor = ".intval($_GET['hapus_sponsor'])); header("Location: index.php#sponsors"); exit; }
@@ -92,6 +81,21 @@ $m = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(jumlah) as total FROM ka
 $k = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='keluar'"));
 $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 ?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | <?php echo $setting['nama_website']; ?></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .spa-section { display: none; }
+        .spa-section.active { display: block; }
+    </style>
+</head>
+<body class="bg-[#020617] text-gray-200">
+    </body>
+</html>
 
 <!DOCTYPE html>
 <html lang="id">
