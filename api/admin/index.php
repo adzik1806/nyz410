@@ -61,7 +61,6 @@ if (isset($_POST['tambah_event'])) {
 if (isset($_POST['tambah_venue'])) {
     $nama_v = mysqli_real_escape_string($conn, $_POST['nama_venue']);
     
-    // Amankan kategori sport jika dari form terbaca kosong atau salah name attribute
     $kat_v = 'Sepakbola'; 
     if (isset($_POST['kategori_sport']) && !empty(trim($_POST['kategori_sport']))) {
         $kat_v = mysqli_real_escape_string($conn, $_POST['kategori_sport']);
@@ -71,9 +70,7 @@ if (isset($_POST['tambah_venue'])) {
     
     $alamat_v = mysqli_real_escape_string($conn, $_POST['alamat']);
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
-    $id_venue_otomatis = time(); 
     
-    // Konversi gambar ke Base64 agar aman di platform read-only Vercel
     $foto_data = "default_venue.jpg"; 
     if (isset($_FILES['foto_venue']) && $_FILES['foto_venue']['tmp_name'] != "") {
         $path = $_FILES['foto_venue']['tmp_name'];
@@ -82,8 +79,8 @@ if (isset($_POST['tambah_venue'])) {
         $foto_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    $query = "INSERT INTO venues (id_venue, nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) 
-              VALUES ('$id_venue_otomatis', '$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')";
+    $query = "INSERT INTO venues (nama_venue, kategori_sport, alamat_venue, maps_link, foto_venue) 
+              VALUES ('$nama_v', '$kat_v', '$alamat_v', '$maps', '$foto_data')";
               
     mysqli_query($conn, $query);
     header("Location: index.php#venues"); 
@@ -93,9 +90,7 @@ if (isset($_POST['tambah_venue'])) {
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
     $link_w = isset($_POST['link_website']) ? mysqli_real_escape_string($conn, $_POST['link_website']) : '#';
-    $id_sponsor_otomatis = time(); // Mengisi id_sponsor secara manual agar TiDB tidak protes
     
-    // Konversi logo ke Base64
     $logo_data = "default_sponsor.jpg";
     if (isset($_FILES['logo_sponsor']) && $_FILES['logo_sponsor']['tmp_name'] != "") {
         $path = $_FILES['logo_sponsor']['tmp_name'];
@@ -104,8 +99,8 @@ if (isset($_POST['tambah_sponsor'])) {
         $logo_data = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
     
-    $query = "INSERT INTO sponsors (id_sponsor, nama_sponsor, link_website, logo_icon) 
-              VALUES ('$id_sponsor_otomatis', '$nama_s', '$link_w', '$logo_data')";
+    $query = "INSERT INTO sponsors (nama_sponsor, link_website, logo_icon) 
+              VALUES ('$nama_s', '$link_w', '$logo_data')";
               
     mysqli_query($conn, $query);
     header("Location: index.php#sponsors");
@@ -125,9 +120,7 @@ if (isset($_POST['tambah_kas'])) {
 
 if (isset($_POST['tambah_gallery'])) {
     $caption = mysqli_real_escape_string($conn, $_POST['caption']);
-    $id_gallery_otomatis = time();
     
-    // Konversi foto galeri ke Base64
     $gallery_data = "";
     if (isset($_FILES['foto_galeri']) && $_FILES['foto_galeri']['tmp_name'] != "") {
         $path = $_FILES['foto_galeri']['tmp_name'];
@@ -137,7 +130,7 @@ if (isset($_POST['tambah_gallery'])) {
     }
     
     if (!empty($gallery_data)) {
-        $query = "INSERT INTO gallery (id_gallery, foto, caption) VALUES ('$id_gallery_otomatis', '$gallery_data', '$caption')";
+        $query = "INSERT INTO gallery (foto, caption) VALUES ('$gallery_data', '$caption')";
         mysqli_query($conn, $query);
     }
     header("Location: index.php#gallery");
