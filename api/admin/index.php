@@ -61,6 +61,7 @@ if (isset($_POST['tambah_event'])) {
 if (isset($_POST['tambah_venue'])) {
     $nama_v = mysqli_real_escape_string($conn, $_POST['nama_venue']);
     
+    // Amankan kategori sport jika dari form terbaca kosong atau salah name attribute
     $kat_v = 'Sepakbola'; 
     if (isset($_POST['kategori_sport']) && !empty(trim($_POST['kategori_sport']))) {
         $kat_v = mysqli_real_escape_string($conn, $_POST['kategori_sport']);
@@ -72,7 +73,7 @@ if (isset($_POST['tambah_venue'])) {
     $maps = mysqli_real_escape_string($conn, $_POST['maps_link']);
     $id_venue_otomatis = time(); 
     
-    // Penanganan Foto tanpa simpan fisik ke Vercel (Base64)
+    // Konversi gambar ke Base64 agar aman di platform read-only Vercel
     $foto_data = "default_venue.jpg"; 
     if (isset($_FILES['foto_venue']) && $_FILES['foto_venue']['tmp_name'] != "") {
         $path = $_FILES['foto_venue']['tmp_name'];
@@ -92,8 +93,9 @@ if (isset($_POST['tambah_venue'])) {
 if (isset($_POST['tambah_sponsor'])) {
     $nama_s = mysqli_real_escape_string($conn, $_POST['nama_sponsor']);
     $link_w = isset($_POST['link_website']) ? mysqli_real_escape_string($conn, $_POST['link_website']) : '#';
-    $id_sponsor_otomatis = time();
+    $id_sponsor_otomatis = time(); // Mengisi id_sponsor secara manual agar TiDB tidak protes
     
+    // Konversi logo ke Base64
     $logo_data = "default_sponsor.jpg";
     if (isset($_FILES['logo_sponsor']) && $_FILES['logo_sponsor']['tmp_name'] != "") {
         $path = $_FILES['logo_sponsor']['tmp_name'];
@@ -125,6 +127,7 @@ if (isset($_POST['tambah_gallery'])) {
     $caption = mysqli_real_escape_string($conn, $_POST['caption']);
     $id_gallery_otomatis = time();
     
+    // Konversi foto galeri ke Base64
     $gallery_data = "";
     if (isset($_FILES['foto_galeri']) && $_FILES['foto_galeri']['tmp_name'] != "") {
         $path = $_FILES['foto_galeri']['tmp_name'];
