@@ -5,23 +5,19 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Data Connection Pooling Supabase IPv4
-$host     = "aws-0-ap-southeast-1.pooler.supabase.com"; 
-$port     = "6543"; 
-$dbname   = "postgres";
-$password = "Adzikahmad0896"; 
+$host = "gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com"; 
+$user = "3dnB917rPV4v88s.root"; 
+$pass = "dL48mU1Ba0xK2lKo"; 
+$db   = "komunitas_bola"; 
+$port = 4000; 
 
-// PERBAIKAN DI SINI: Gunakan titik dua (:) untuk memisahkan user postgres dengan ID project
-$user     = "postgres:ahsuqcloonhvjhgwpwgo"; 
+// Inisialisasi koneksi MySQLi
+$conn = mysqli_init();
 
-try {
-    // Koneksi menggunakan PDO PostgreSQL lewat jalur Pooler IPv4
-    $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;";
-    $conn = new PDO($dsn, $user, $password, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
-} catch (PDOException $e) {
-    die("Koneksi ke Supabase Gagal: " . $e->getMessage());
+// Menghubungkan ke TiDB dengan SSL
+mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
+
+if (!mysqli_real_connect($conn, $host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL)) {
+    die("Koneksi Database Gagal: " . mysqli_connect_error());
 }
 ?>
