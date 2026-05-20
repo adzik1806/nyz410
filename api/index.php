@@ -165,60 +165,6 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             background:#1e293b;
             border-radius:20px;
         }
-
-        .marquee-container{
-    width:100%;
-    overflow:hidden;
-    position:relative;
-}
-
-.animate-scroll-fast{
-    display:flex;
-    align-items:center;
-    width:max-content;
-    animation:scrollMarquee 25s linear infinite;
-}
-
-@keyframes scrollMarquee{
-    0%{
-        transform:translateX(100%);
-    }
-    100%{
-        transform:translateX(-100%);
-    }
-}
-
-.sponsor-item{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    margin:0 35px;
-}
-
-.sponsor-box{
-    width:180px;
-    height:100px;
-    background:white;
-    border-radius:24px;
-    padding:20px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:0.4s ease;
-    box-shadow:0 10px 30px rgba(0,0,0,0.15);
-}
-
-.sponsor-box:hover{
-    transform:translateY(-6px) scale(1.03);
-    box-shadow:0 15px 40px rgba(251,191,36,0.25);
-}
-
-.sponsor-box img{
-    max-width:100%;
-    max-height:100%;
-    object-fit:contain;
-}
     </style>
 </head>
 
@@ -381,11 +327,6 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             Our <span class="text-gradient">Partners</span>
         </h2>
 
-        <!-- SEO -->
-        <h3 class="sr-only">
-            Sponsor dan Partner Resmi <?php echo $setting['nama_website']; ?>
-        </h3>
-
     </div>
 
     <div class="marquee-container">
@@ -395,52 +336,22 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             <?php 
             $sql_marquee = mysqli_query($conn,"SELECT * FROM sponsors");
 
-            if(mysqli_num_rows($sql_marquee) > 0):
-
-                while($s = mysqli_fetch_assoc($sql_marquee)):
-
-                    // Fix path logo
-                    $logo = !empty($s['logo_icon']) 
-                        ? 'assets/sponsors/' . $s['logo_icon']
-                        : 'assets/no-image.png';
-
-                    // Jika file tidak ada
-                    if(!file_exists($logo)){
-                        $logo = 'assets/no-image.png';
-                    }
+            while($s = mysqli_fetch_assoc($sql_marquee)):
             ?>
 
             <div class="sponsor-item">
 
                 <div class="sponsor-box">
-
-                    <img 
-                        src="<?php echo $logo; ?>" 
-                        alt="<?php echo $s['nama_sponsor']; ?>" 
-                        title="<?php echo $s['nama_sponsor']; ?>"
-                        loading="lazy"
-                        class="max-h-full max-w-full object-contain transition-all duration-300 hover:scale-105"
-                    >
-
+                    <img src="<?php echo $s['logo_icon']; ?>" class="max-h-full max-w-full object-contain">
                 </div>
 
-                <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black text-center">
+                <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black">
                     <?php echo $s['nama_sponsor']; ?>
                 </span>
 
             </div>
 
-            <?php 
-                endwhile; 
-            else:
-            ?>
-
-            <!-- Jika sponsor kosong -->
-            <div class="w-full text-center py-10 text-gray-500 uppercase tracking-[0.3em] text-xs">
-                Belum ada sponsor tersedia
-            </div>
-
-            <?php endif; ?>
+            <?php endwhile; ?>
 
         </div>
 
