@@ -341,18 +341,18 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
         if (!empty($sponsors)):
             $jumlah_sponsor = count($sponsors);
             
-            // JIKA SPONSOR SEDIKIT (kurang dari 4): Kita tampilkan statis di tengah, TIDAK USAH DI-MARQUEE agar tidak double aneh
+            // JIKA SPONSOR SEDIKIT (kurang dari 4): Tampil statis di tengah, tidak usah loop marquee
             if ($jumlah_sponsor < 4): 
         ?>
                 <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12">
                     <?php 
                     foreach ($sponsors as $s): 
-                        // MENYESUAIKAN PATH BERDASARKAN SERVERLESS VERCEL
-                        $path_gambar = "assets/sponsors/" . $s['logo_icon']; 
+                        // PERBAIKAN UTAMA: Karena data di DB berupa Base64, variabel langsung mengambil nilainya
+                        $gambar_sponsor = $s['logo_icon']; 
                     ?>
                         <div class="sponsor-item flex flex-col items-center justify-center text-center">
                             <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white rounded-xl md:rounded-[24px] flex items-center justify-center p-4 shadow-xl shadow-black/40 transition-all duration-300 hover:-translate-y-2">
-                                <img src="<?php echo $path_gambar; ?>" 
+                                <img src="<?php echo $gambar_sponsor; ?>" 
                                      class="max-w-full max-h-full object-contain block mx-auto" 
                                      alt="<?php echo $s['nama_sponsor']; ?>">
                             </div>
@@ -364,18 +364,18 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
                 </div>
 
         <?php 
-            // JIKA SPONSOR BANYAK (4 atau lebih): Baru kita jalankan fitur animasi gerak meluncur (Marquee)
+            // JIKA SPONSOR BANYAK (4 atau lebih): Baru jalankan animasi marquee meluncur
             else: 
-                $display_sponsors = array_merge($sponsors, $sponsors); // Duplikasi aman untuk seamless loop
+                $display_sponsors = array_merge($sponsors, $sponsors); 
         ?>
                 <div class="animate-scroll-fast flex items-center gap-8 md:gap-12 w-max">
                     <?php 
                     foreach ($display_sponsors as $s): 
-                        $path_gambar = "assets/sponsors/" . $s['logo_icon']; 
+                        $gambar_sponsor = $s['logo_icon']; 
                     ?>
                         <div class="sponsor-item flex-shrink-0 flex flex-col items-center justify-center text-center">
                             <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white rounded-xl md:rounded-[24px] flex items-center justify-center p-4 shadow-xl shadow-black/40">
-                                <img src="<?php echo $path_gambar; ?>" 
+                                <img src="<?php echo $gambar_sponsor; ?>" 
                                      class="max-w-full max-h-full object-contain block mx-auto" 
                                      alt="<?php echo $s['nama_sponsor']; ?>">
                             </div>
