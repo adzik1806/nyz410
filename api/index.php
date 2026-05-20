@@ -314,47 +314,81 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
 </section>
 
-<!-- PARTNERS -->
 <section class="py-20 border-y border-white/5 bg-white/[0.01] overflow-hidden">
 
     <div class="text-center mb-14" data-aos="fade-up">
-
         <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-black mb-2">
             Support System
         </p>
-
         <h2 class="text-4xl font-black uppercase italic tracking-tight">
             Our <span class="text-gradient">Partners</span>
         </h2>
-
     </div>
 
-    <div class="marquee-container">
-
-        <div class="animate-scroll-fast">
+    <div class="marquee-container relative w-full">
+        <div class="animate-scroll-fast flex items-center">
 
             <?php 
-            $sql_marquee = mysqli_query($conn,"SELECT * FROM sponsors");
+            $sql_marquee = mysqli_query($conn, "SELECT * FROM sponsors");
+            
+            // Kita tampung dulu ke dalam array agar bisa diduplikasi untuk trik animasi seamless (tanpa putus)
+            $sponsors = [];
+            if ($sql_marquee && mysqli_num_rows($sql_marquee) > 0) {
+                while($row = mysqli_fetch_assoc($sql_marquee)) {
+                    $sponsors[] = $row;
+                }
+            }
 
-            while($s = mysqli_fetch_assoc($sql_marquee)):
+            if (!empty($sponsors)):
+                // Menggabungkan array dengan dirinya sendiri agar meluncur tanpa jeda kosong di layar
+                $display_sponsors = array_merge($sponsors, $sponsors);
+                
+                foreach ($display_sponsors as $s): 
+                    /** * CATATAN PENTING: 
+                     * Jika file gambar ditaruh di dalam folder, pastikan path-nya benar.
+                     * Contoh jika di dalam folder admin/assets/img/sponsors/, ubah menjadi:
+                     * "admin/assets/img/sponsors/" . $s['logo_icon']
+                     */
+                    $path_gambar = "assets/" . $s['logo_icon']; 
             ?>
 
-            <div class="sponsor-item">
+                <div class="sponsor-item flex-shrink-0 flex flex-col items-center mx-4 md:mx-8">
 
-                <div class="sponsor-box">
-                    <img src="<?php echo $s['logo_icon']; ?>" class="max-h-full max-w-full object-contain">
+                    <div class="sponsor-box bg-white flex items-center justify-center shadow-lg shadow-black/30 rounded-[18px] md:rounded-[30px]">
+                        <img src="<?php echo $path_gambar; ?>" 
+                             class="max-h-full max-w-full object-contain p-2" 
+                             alt="<?php echo $s['nama_sponsor']; ?>"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        
+                        <span class="hidden text-slate-800 font-extrabold text-sm uppercase tracking-wider">
+                            <?php echo $s['nama_sponsor']; ?>
+                        </span>
+                    </div>
+
+                    <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black mt-3">
+                        <?php echo $s['nama_sponsor']; ?>
+                    </span>
+
                 </div>
 
-                <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black">
-                    <?php echo $s['nama_sponsor']; ?>
-                </span>
-
-            </div>
-
-            <?php endwhile; ?>
+            <?php 
+                endforeach; 
+            else: 
+                // Tampilan cadangan jika tabel 'sponsors' di database Anda benar-benar kosong
+                for($i = 1; $i <= 4; $i++):
+            ?>
+                <div class="sponsor-item flex-shrink-0 flex flex-col items-center mx-8">
+                    <div class="sponsor-box bg-white/5 border border-white/10 flex items-center justify-center w-[140px] h-[85px] md:w-[220px] md:h-[120px] rounded-2xl">
+                        <i class="fa-solid fa-handshake text-yellow-500/20 text-3xl"></i>
+                    </div>
+                    <span class="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-black mt-3">Placeholder</span>
+                </div>
+            <?php 
+                endfor;
+            endif; 
+            ?>
 
         </div>
-
     </div>
 
 </section>
