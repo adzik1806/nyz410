@@ -12,12 +12,6 @@ $setting = mysqli_fetch_assoc($q_setting) ?? [
     'stats_venue' => '0'
 ];
 
-// SEO
-$site_name   = $setting['nama_website'];
-$site_desc   = $setting['deskripsi_website'];
-$site_logo   = "assets/" . $setting['logo_website'];
-$site_url    = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http") . "://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-
 // Saldo Kas
 $q_m = mysqli_query($conn, "SELECT SUM(jumlah) as total FROM kas WHERE tipe='masuk'");
 $m = mysqli_fetch_assoc($q_m);
@@ -33,29 +27,10 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title><?php echo $setting['nama_website']; ?> | Community Hub</title>
 
-    <!-- SEO -->
-    <title><?php echo $site_name; ?> | Community Hub</title>
-    <meta name="description" content="<?php echo $site_desc; ?>">
-    <meta name="keywords" content="futsal depok, minisoccer depok, sepakbola depok, komunitas olahraga depok, sparing futsal, football community">
-    <meta name="author" content="<?php echo $site_name; ?>">
-    <meta name="robots" content="index, follow">
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="<?php echo $site_name; ?>">
-    <meta property="og:description" content="<?php echo $site_desc; ?>">
-    <meta property="og:image" content="<?php echo $site_logo; ?>">
-    <meta property="og:url" content="<?php echo $site_url; ?>">
-    <meta property="og:type" content="website">
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="<?php echo $site_name; ?>">
-    <meta name="twitter:description" content="<?php echo $site_desc; ?>">
-    <meta name="twitter:image" content="<?php echo $site_logo; ?>">
-
-    <link rel="canonical" href="<?php echo $site_url; ?>">
-    <link rel="icon" type="image/png" href="<?php echo $site_logo; ?>">
+    <link rel="icon" type="image/png" href="assets/<?php echo $setting['logo_website']; ?>">
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -63,159 +38,211 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #020617;
-            color: white;
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
 
-        .glass {
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.08);
+        body{
+            font-family:'Plus Jakarta Sans',sans-serif;
+            background:#020617;
+            color:white;
+            overflow-x:hidden;
         }
 
-        .text-gradient {
-            background: linear-gradient(to right, #fbbf24, #f59e0b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .glass{
+            background:rgba(255,255,255,0.04);
+            backdrop-filter:blur(14px);
+            border:1px solid rgba(255,255,255,0.08);
         }
 
-        @keyframes scrollMarquee {
-            0% {
-                transform: translateX(0%);
+        .text-gradient{
+            background:linear-gradient(to right,#fbbf24,#f59e0b);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .hero-bg::before{
+            content:'';
+            position:absolute;
+            inset:0;
+            background:linear-gradient(to bottom,rgba(2,6,23,0.1),#020617);
+            z-index:1;
+        }
+
+        @keyframes scrollMarquee{
+            0%{
+                transform:translateX(100vw);
             }
-            100% {
-                transform: translateX(-50%);
+            100%{
+                transform:translateX(-100%);
             }
         }
 
-        .marquee-container {
-            width: 100%;
-            overflow: hidden;
-            position: relative;
+        .animate-scroll-fast{
+            display:flex;
+            width:max-content;
+            animation:scrollMarquee 20s linear infinite;
         }
 
-        .animate-scroll-fast {
-            display: flex;
-            align-items: center;
-            width: max-content;
-            animation: scrollMarquee 25s linear infinite;
+        .marquee-container{
+            width:100%;
+            overflow:hidden;
+            mask-image:linear-gradient(to right,transparent,black 10%,black 90%,transparent);
+            -webkit-mask-image:linear-gradient(to right,transparent,black 10%,black 90%,transparent);
         }
 
-        .animate-scroll-fast:hover {
-            animation-play-state: paused;
+        .sponsor-item{
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:1rem;
+            margin:0 30px;
         }
 
-        .sponsor-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 30px;
+        .sponsor-box{
+            flex:0 0 auto;
+            background:white;
+            border-radius:20px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            width:150px;
+            height:90px;
+            padding:15px;
+            transition:all .4s ease;
         }
 
-        .sponsor-box {
-            width: 180px;
-            height: 100px;
-            background: white;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            transition: .4s ease;
-            overflow: hidden;
+        .sponsor-box:hover{
+            transform:translateY(-8px) scale(1.04);
+            box-shadow:0 15px 40px rgba(251,191,36,.3);
         }
 
-        .sponsor-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        @media(min-width:768px){
+            .sponsor-box{
+                width:220px;
+                height:120px;
+                padding:25px;
+                border-radius:28px;
+            }
+
+            .sponsor-item{
+                margin:0 40px;
+            }
         }
 
-        .sponsor-box:hover {
-            transform: translateY(-6px) scale(1.04);
-            box-shadow: 0 15px 40px rgba(251,191,36,0.3);
+        .match-card{
+            transition:.4s ease;
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
+        .match-card:hover{
+            transform:translateY(-10px);
+            border-color:rgba(251,191,36,.4);
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 10px;
+        .gallery-item img{
+            transition:.7s ease;
+        }
+
+        .gallery-item:hover img{
+            transform:scale(1.1);
+        }
+
+        ::-webkit-scrollbar{
+            width:8px;
+        }
+
+        ::-webkit-scrollbar-track{
+            background:#020617;
+        }
+
+        ::-webkit-scrollbar-thumb{
+            background:#1e293b;
+            border-radius:20px;
         }
     </style>
 </head>
 
-<body class="overflow-x-hidden">
+<body>
 
 <!-- NAVBAR -->
-<nav class="fixed w-full z-50 transition-all duration-300 py-6 px-6" id="navbar">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
+<nav id="navbar" class="fixed top-0 left-0 w-full z-50 py-6 px-6 transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
 
         <div class="flex items-center gap-3">
-            <img src="<?php echo $site_logo; ?>" class="h-10 object-contain" alt="<?php echo $site_name; ?>">
-            <h1 class="text-2xl font-black tracking-tighter text-gradient uppercase">
-                <?php echo $site_name; ?>
+            <img src="assets/<?php echo $setting['logo_website']; ?>" class="h-8 md:h-10 object-contain">
+            <h1 class="text-2xl font-black uppercase tracking-tight text-gradient">
+                <?php echo $setting['nama_website']; ?>
             </h1>
         </div>
 
-        <div class="hidden md:flex space-x-6 font-bold text-[10px] uppercase tracking-widest text-gray-400">
-            <a href="javascript:void(0)" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="hover:text-yellow-400">Home</a>
+        <div class="hidden md:flex items-center gap-6 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400">
 
-            <a href="javascript:void(0)" onclick="scrollToSection('about')" class="hover:text-yellow-400">About</a>
+            <a href="javascript:void(0)" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="hover:text-yellow-400 transition">
+                Home
+            </a>
 
-            <a href="javascript:void(0)" onclick="scrollToSection('events')" class="hover:text-yellow-400">Schedules</a>
+            <a href="javascript:void(0)" onclick="scrollToSection('about')" class="hover:text-yellow-400 transition">
+                About
+            </a>
 
-            <a href="javascript:void(0)" onclick="scrollToSection('venues')" class="hover:text-yellow-400">Venues</a>
+            <a href="javascript:void(0)" onclick="scrollToSection('events')" class="hover:text-yellow-400 transition">
+                Schedule
+            </a>
 
-            <a href="javascript:void(0)" onclick="scrollToSection('gallery')" class="hover:text-yellow-400">Gallery</a>
+            <a href="javascript:void(0)" onclick="scrollToSection('venues')" class="hover:text-yellow-400 transition">
+                Venues
+            </a>
 
-            <a href="javascript:void(0)" onclick="scrollToSection('kas')" class="hover:text-yellow-400">Kas</a>
+            <a href="javascript:void(0)" onclick="scrollToSection('gallery')" class="hover:text-yellow-400 transition">
+                Gallery
+            </a>
+
+            <a href="javascript:void(0)" onclick="scrollToSection('kas')" class="hover:text-yellow-400 transition">
+                Kas
+            </a>
+
         </div>
 
         <a href="https://wa.me/<?php echo $setting['wa_admin']; ?>"
-           class="bg-yellow-500 text-black px-6 py-2 rounded-full font-bold text-xs hover:bg-yellow-400 transition">
-            JOIN COMMUNITY
+           class="bg-yellow-500 text-black px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest hover:bg-yellow-400 transition">
+            Join Community
         </a>
 
     </div>
 </nav>
 
 <!-- HERO -->
-<section class="h-screen flex items-center justify-center relative px-6 overflow-hidden">
+<section class="relative h-screen flex items-center justify-center px-6 overflow-hidden">
 
-    <div class="absolute inset-0 z-0">
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#020617]"></div>
-
+    <div class="absolute inset-0 hero-bg">
         <img src="https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=2070"
              class="w-full h-full object-cover opacity-30">
     </div>
 
     <div class="relative z-10 text-center" data-aos="fade-up">
 
-        <span class="inline-block px-4 py-1 mb-6 border border-yellow-500/30 rounded-full text-yellow-500 text-[10px] font-bold tracking-[0.3em] uppercase">
-            Football, Futsal dan Minisoccer
+        <span class="inline-block px-5 py-2 rounded-full border border-yellow-500/30 text-yellow-500 text-[10px] uppercase tracking-[0.3em] font-bold mb-6">
+            Football • Futsal • Minisoccer
         </span>
 
-        <h1 class="text-6xl md:text-9xl font-black mb-6 tracking-tighter leading-none uppercase">
+        <h1 class="text-6xl md:text-9xl font-black uppercase leading-none tracking-tighter mb-6">
             ONE TEAM.<br>
             <span class="text-gradient">ONE GOAL.</span>
         </h1>
 
-        <p class="max-w-xl mx-auto text-gray-400 text-sm md:text-lg mb-10 italic">
-            "<?php echo $site_desc; ?>"
+        <p class="max-w-2xl mx-auto text-gray-400 italic mb-10">
+            "<?php echo $setting['deskripsi_website']; ?>"
         </p>
 
         <a href="javascript:void(0)"
            onclick="scrollToSection('events')"
-           class="bg-white text-black px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-yellow-500 transition-all">
+           class="inline-block bg-white text-black px-10 py-5 rounded-2xl uppercase tracking-widest font-black text-sm hover:bg-yellow-500 transition">
             Cek Jadwal Sekarang
         </a>
 
@@ -224,66 +251,79 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
 <!-- ABOUT -->
 <section id="about" class="py-32 px-6">
+
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
 
         <div data-aos="fade-right">
 
-            <p class="text-yellow-500 font-bold text-xs tracking-[0.4em] uppercase mb-4">
+            <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-bold mb-4">
                 Discovery
             </p>
 
-            <h2 class="text-4xl md:text-5xl font-black uppercase mb-8 leading-tight">
-                We Are <span class="text-gradient"><?php echo $site_name; ?></span>
+            <h2 class="text-4xl md:text-5xl font-black uppercase leading-tight mb-8">
+                We Are <span class="text-gradient"><?php echo $setting['nama_website']; ?></span>
             </h2>
 
             <p class="text-gray-400 leading-relaxed mb-6">
-                Berawal dari semangat kebersamaan di lapangan hijau, 
-                <?php echo $site_name; ?> kini tumbuh menjadi komunitas multisport 
-                yang mewadahi pecinta sepakbola dan futsal di Depok dan sekitarnya.
+                Berawal dari semangat kebersamaan di lapangan hijau,
+                <?php echo $setting['nama_website']; ?> kini tumbuh menjadi komunitas multisport
+                yang mewadahi pecinta sepakbola dan futsal.
             </p>
 
-            <div class="grid grid-cols-2 gap-6 text-center mt-10">
+            <p class="text-gray-400 leading-relaxed mb-8">
+                Kami percaya olahraga bukan sekadar kompetisi,
+                tetapi juga tempat membangun relasi dan kebersamaan.
+            </p>
 
-                <div class="glass p-4 rounded-2xl">
-                    <h4 class="text-2xl font-black text-yellow-500">
+            <div class="grid grid-cols-2 gap-6">
+
+                <div class="glass rounded-3xl p-5 text-center">
+                    <h3 class="text-3xl font-black text-yellow-500">
                         <?php echo $setting['stats_member']; ?>+
-                    </h4>
-                    <p class="text-[10px] uppercase tracking-widest text-gray-500">
+                    </h3>
+
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
                         Active Members
                     </p>
                 </div>
 
-                <div class="glass p-4 rounded-2xl">
-                    <h4 class="text-2xl font-black text-yellow-500">
+                <div class="glass rounded-3xl p-5 text-center">
+                    <h3 class="text-3xl font-black text-yellow-500">
                         <?php echo $setting['stats_venue']; ?>+
-                    </h4>
-                    <p class="text-[10px] uppercase tracking-widest text-gray-500">
+                    </h3>
+
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
                         Homebase Venues
                     </p>
                 </div>
 
             </div>
+
         </div>
 
         <div class="relative" data-aos="fade-left">
-            <img src="<?php echo $site_logo; ?>"
-                 class="relative w-full h-auto max-w-sm mx-auto"
-                 alt="<?php echo $site_name; ?>">
+
+            <div class="absolute -inset-5 bg-yellow-500/10 blur-3xl rounded-full"></div>
+
+            <img src="assets/6a021cab23106_logo nyenkzer.png"
+                 class="relative w-full max-w-sm mx-auto">
+
         </div>
 
     </div>
+
 </section>
 
-<!-- SPONSOR -->
-<section class="py-20 bg-white/[0.01] border-y border-white/5 overflow-hidden">
+<!-- PARTNERS -->
+<section class="py-20 border-y border-white/5 bg-white/[0.01] overflow-hidden">
 
     <div class="text-center mb-14" data-aos="fade-up">
 
-        <p class="text-yellow-500 font-black text-[10px] tracking-[0.5em] uppercase mb-3">
+        <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-black mb-2">
             Support System
         </p>
 
-        <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tighter italic">
+        <h2 class="text-4xl font-black uppercase italic tracking-tight">
             Our <span class="text-gradient">Partners</span>
         </h2>
 
@@ -293,104 +333,385 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
         <div class="animate-scroll-fast">
 
-            <?php
-            $sql_marquee = mysqli_query($conn, "SELECT * FROM sponsors");
+            <?php 
+            $sql_marquee = mysqli_query($conn,"SELECT * FROM sponsors");
 
-            if(mysqli_num_rows($sql_marquee) > 0):
-
-                while($s = mysqli_fetch_assoc($sql_marquee)):
+            while($s = mysqli_fetch_assoc($sql_marquee)):
             ?>
 
             <div class="sponsor-item">
 
                 <div class="sponsor-box">
-
-                    <?php
-                    $logo = $s['logo_icon'];
-
-                    if(!empty($logo)):
-                    ?>
-
-                        <img src="<?php echo $logo; ?>"
-                             alt="<?php echo $s['nama_sponsor']; ?>">
-
-                    <?php else: ?>
-
-                        <span class="text-black font-black text-xl">
-                            <?php echo $s['nama_sponsor']; ?>
-                        </span>
-
-                    <?php endif; ?>
-
+                    <img src="<?php echo $s['logo_icon']; ?>" class="max-h-full max-w-full object-contain">
                 </div>
 
-                <span class="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-yellow-500/70">
+                <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black">
                     <?php echo $s['nama_sponsor']; ?>
                 </span>
 
             </div>
 
-            <?php 
-                endwhile;
-
-                // DUPLIKASI BIAR LOOP HALUS
-                mysqli_data_seek($sql_marquee, 0);
-
-                while($s = mysqli_fetch_assoc($sql_marquee)):
-            ?>
-
-            <div class="sponsor-item">
-
-                <div class="sponsor-box">
-
-                    <?php if(!empty($s['logo_icon'])): ?>
-
-                        <img src="<?php echo $s['logo_icon']; ?>"
-                             alt="<?php echo $s['nama_sponsor']; ?>">
-
-                    <?php endif; ?>
-
-                </div>
-
-                <span class="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-yellow-500/70">
-                    <?php echo $s['nama_sponsor']; ?>
-                </span>
-
-            </div>
-
-            <?php 
-                endwhile;
-
-            endif;
-            ?>
+            <?php endwhile; ?>
 
         </div>
 
     </div>
+
+</section>
+
+<!-- EVENTS -->
+<section id="events" class="py-32 px-6">
+
+    <div class="max-w-7xl mx-auto text-center mb-16" data-aos="fade-up">
+
+        <h2 class="text-4xl font-black uppercase italic tracking-tight mb-5">
+            Match <span class="text-gradient">Schedules</span>
+        </h2>
+
+        <div class="flex justify-center flex-wrap gap-3 mt-8">
+
+            <button onclick="filterMatch('all', event)"
+                    class="tab-btn bg-yellow-500 text-black px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-black">
+                All
+            </button>
+
+            <button onclick="filterMatch('Sepakbola', event)"
+                    class="tab-btn bg-white/5 text-gray-400 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-black">
+                Football
+            </button>
+
+            <button onclick="filterMatch('Futsal', event)"
+                    class="tab-btn bg-white/5 text-gray-400 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-black">
+                Futsal
+            </button>
+
+            <button onclick="filterMatch('Minisoccer', event)"
+                    class="tab-btn bg-white/5 text-gray-400 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-black">
+                Minisoccer
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <?php
+        $query = mysqli_query($conn,"SELECT * FROM events WHERE status_event='tersedia' ORDER BY tanggal ASC");
+
+        while($row = mysqli_fetch_assoc($query)):
+        ?>
+
+        <div class="match-card glass rounded-[40px] p-8 shadow-2xl"
+             data-category="<?php echo $row['kategori']; ?>"
+             data-aos="zoom-in">
+
+            <div class="flex justify-between items-start mb-8">
+
+                <span class="bg-white/10 border border-yellow-500/20 text-yellow-500 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold">
+                    <?php echo $row['kategori']; ?>
+                </span>
+
+                <div class="text-right">
+
+                    <p class="text-[9px] uppercase text-gray-500 font-black mb-1">
+                        Entry Fee
+                    </p>
+
+                    <?php if($row['kategori']=='Sepakbola' || $row['kategori']=='Minisoccer'): ?>
+
+                        <p class="text-lg font-black">
+                            Pemain: <?php echo number_format($row['harga']/1000,0); ?>K
+                        </p>
+
+                        <p class="text-yellow-500 text-sm font-bold">
+                            Kiper: <?php echo number_format(($row['harga']-10000)/1000,0); ?>K
+                        </p>
+
+                    <?php else: ?>
+
+                        <p class="text-2xl font-black">
+                            <?php echo number_format($row['harga']/1000,0); ?>K
+                        </p>
+
+                    <?php endif; ?>
+
+                </div>
+
+            </div>
+
+            <h3 class="text-2xl font-black uppercase tracking-tight mb-2">
+                <?php echo $row['judul_event']; ?>
+            </h3>
+
+            <p class="text-gray-500 uppercase tracking-widest text-xs mb-8">
+                <i class="fa-solid fa-location-dot text-yellow-500 mr-2"></i>
+                <?php echo $row['lokasi']; ?>
+            </p>
+
+            <a href="https://wa.me/<?php echo $setting['wa_admin']; ?>?text=Halo Admin, saya ingin Join match <?php echo $row['judul_event']; ?>"
+               class="block text-center bg-yellow-500 text-black py-5 rounded-3xl uppercase tracking-[0.2em] font-black text-xs hover:scale-[1.02] transition">
+                Join Now
+            </a>
+
+        </div>
+
+        <?php endwhile; ?>
+
+    </div>
+
+</section>
+
+<!-- VENUES -->
+<section id="venues" class="py-28 px-6 bg-white/[0.02]">
+
+    <div class="max-w-7xl mx-auto">
+
+        <h2 class="text-4xl font-black uppercase italic tracking-tight mb-14">
+            Our Homebase <span class="text-gradient">Venues</span>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+            <?php
+            $q_venues = mysqli_query($conn,"SELECT * FROM venues ORDER BY id_venue DESC LIMIT 4");
+
+            while($v = mysqli_fetch_assoc($q_venues)):
+            ?>
+
+            <div class="glass rounded-[35px] p-5 group">
+
+                <div class="h-44 overflow-hidden rounded-3xl mb-6">
+
+                    <img src="<?php echo $v['foto_venue']; ?>"
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+
+                </div>
+
+                <h3 class="font-black uppercase text-sm tracking-widest mb-2">
+                    <?php echo $v['nama_venue']; ?>
+                </h3>
+
+                <p class="text-[10px] uppercase tracking-widest text-gray-500 leading-relaxed font-bold">
+                    <span class="text-yellow-500">
+                        <?php echo $v['kategori_sport']; ?>
+                    </span>
+                    <br>
+                    <?php echo $v['alamat_venue']; ?>
+                </p>
+
+                <?php if(!empty($v['maps_link'])): ?>
+
+                <a href="<?php echo $v['maps_link']; ?>"
+                   target="_blank"
+                   class="mt-6 block text-center py-3 rounded-2xl bg-white/5 hover:bg-yellow-500 hover:text-black transition uppercase tracking-widest text-[10px] font-black">
+                    Lihat Lokasi
+                </a>
+
+                <?php endif; ?>
+
+            </div>
+
+            <?php endwhile; ?>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- KAS -->
+<section id="kas" class="py-24 px-6 bg-yellow-500 text-black">
+
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+
+        <div data-aos="fade-right">
+
+            <h2 class="text-5xl font-black uppercase italic tracking-tight leading-none mb-4">
+                Transparansi<br>Kas Online
+            </h2>
+
+            <p class="font-bold text-black/70 mb-8">
+                Member dapat mengecek saldo komunitas secara realtime.
+            </p>
+
+            <div class="bg-black/10 rounded-3xl p-6 flex justify-between items-center">
+
+                <span class="uppercase tracking-widest text-xs font-black">
+                    Total Saldo Kas
+                </span>
+
+                <span class="text-3xl font-black italic">
+                    Rp <?php echo number_format($saldo_akhir,0,',','.'); ?>
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-[35px] p-6 shadow-2xl" data-aos="fade-left">
+
+            <h3 class="text-center uppercase tracking-[0.3em] text-xs font-black mb-5">
+                History Terakhir
+            </h3>
+
+            <div class="space-y-4 max-h-52 overflow-y-auto">
+
+                <?php
+                $kas_h = mysqli_query($conn,"SELECT * FROM kas ORDER BY id_kas DESC LIMIT 5");
+
+                while($rk = mysqli_fetch_assoc($kas_h)):
+                ?>
+
+                <div class="flex justify-between border-b border-gray-100 pb-3">
+
+                    <div>
+
+                        <p class="font-bold uppercase text-xs">
+                            <?php echo $rk['keterangan']; ?>
+                        </p>
+
+                        <p class="text-[10px] text-gray-400 font-bold">
+                            <?php echo date('d/m/Y',strtotime($rk['tanggal'])); ?>
+                        </p>
+
+                    </div>
+
+                    <p class="<?php echo $rk['tipe']=='masuk' ? 'text-green-600' : 'text-red-500'; ?> font-black text-sm">
+                        <?php echo $rk['tipe']=='masuk' ? '+' : '-'; ?>
+                        <?php echo number_format($rk['jumlah'],0,',','.'); ?>
+                    </p>
+
+                </div>
+
+                <?php endwhile; ?>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="py-32 px-6">
+
+    <div class="max-w-7xl mx-auto text-center mb-16">
+
+        <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-bold mb-4">
+            Moments
+        </p>
+
+        <h2 class="text-5xl font-black uppercase italic tracking-tight">
+            Activity <span class="text-gradient">Gallery</span>
+        </h2>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+
+        <?php
+        $gal = mysqli_query($conn,"SELECT * FROM gallery ORDER BY id_gallery DESC LIMIT 8");
+
+        while($rg = mysqli_fetch_assoc($gal)):
+        ?>
+
+        <div class="gallery-item relative overflow-hidden rounded-3xl h-64 border border-white/5">
+
+            <img src="<?php echo $rg['foto']; ?>"
+                 class="w-full h-full object-cover">
+
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 hover:opacity-100 transition flex items-end p-5">
+
+                <p class="text-yellow-500 uppercase tracking-widest text-[10px] font-bold">
+                    <?php echo $rg['caption']; ?>
+                </p>
+
+            </div>
+
+        </div>
+
+        <?php endwhile; ?>
+
+    </div>
+
 </section>
 
 <!-- FOOTER -->
-<footer class="pt-20 pb-10 text-center border-t border-white/5">
+<footer class="pt-24 pb-12 px-6 border-t border-white/10 bg-[#010409]">
 
-    <img src="<?php echo $site_logo; ?>"
-         class="h-14 mx-auto mb-5"
-         alt="<?php echo $site_name; ?>">
+    <div class="max-w-7xl mx-auto">
 
-    <h2 class="text-3xl font-black text-gradient uppercase mb-3">
-        <?php echo $site_name; ?>
-    </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
 
-    <p class="text-gray-500 text-sm mb-6">
-        <?php echo $site_desc; ?>
-    </p>
+            <div>
 
-    <a href="https://wa.me/<?php echo $setting['wa_admin']; ?>"
-       class="inline-block bg-yellow-500 text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-yellow-400 transition">
-        Join WhatsApp
-    </a>
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="assets/<?php echo $setting['logo_website']; ?>" class="h-10">
+                    <h2 class="text-2xl font-black uppercase text-gradient">
+                        <?php echo $setting['nama_website']; ?>
+                    </h2>
+                </div>
 
-    <div class="mt-12 text-[10px] tracking-[0.3em] uppercase text-gray-600">
-        © <?php echo date('Y'); ?> <?php echo $site_name; ?> — All Rights Reserved
+                <p class="text-gray-500 italic mb-6">
+                    "<?php echo $setting['deskripsi_website']; ?>"
+                </p>
+
+            </div>
+
+            <div>
+
+                <h4 class="uppercase tracking-[0.2em] text-xs font-black mb-6">
+                    Navigation
+                </h4>
+
+                <ul class="space-y-4 text-gray-500 uppercase text-xs tracking-widest font-bold">
+
+                    <li><a href="#" onclick="scrollToSection('about')" class="hover:text-yellow-500">About</a></li>
+                    <li><a href="#" onclick="scrollToSection('events')" class="hover:text-yellow-500">Schedules</a></li>
+                    <li><a href="#" onclick="scrollToSection('venues')" class="hover:text-yellow-500">Venues</a></li>
+                    <li><a href="#" onclick="scrollToSection('gallery')" class="hover:text-yellow-500">Gallery</a></li>
+
+                </ul>
+
+            </div>
+
+            <div>
+
+                <h4 class="uppercase tracking-[0.2em] text-xs font-black mb-6">
+                    Contact
+                </h4>
+
+                <p class="text-gray-400 mb-3">
+                    +<?php echo $setting['wa_admin']; ?>
+                </p>
+
+                <p class="text-gray-400">
+                    hi@<?php echo strtolower(str_replace(' ','',$setting['nama_website'])); ?>.com
+                </p>
+
+            </div>
+
+            <div>
+
+                <h4 class="uppercase tracking-[0.2em] text-xs font-black mb-6">
+                    Admin
+                </h4>
+
+                <a href="admin/login.php"
+                   class="inline-block bg-white/5 border border-white/5 px-5 py-3 rounded-full hover:text-yellow-500 transition uppercase tracking-widest text-xs font-black">
+                    Login Admin
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="border-t border-white/5 pt-10 text-center text-gray-600 uppercase tracking-[0.3em] text-[10px]">
+            © 2026 <?php echo $setting['nama_website']; ?> • ALL RIGHTS RESERVED
+        </div>
+
     </div>
 
 </footer>
@@ -398,12 +719,8 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
 <script>
-    AOS.init({
-        once: true,
-        duration: 800
-    });
 
-    function scrollToSection(sectionId) {
+    function scrollToSection(sectionId){
 
         const element = document.getElementById(sectionId);
 
@@ -412,17 +729,36 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             const offset = 80;
 
             const bodyRect = document.body.getBoundingClientRect().top;
+
             const elementRect = element.getBoundingClientRect().top;
 
             const elementPosition = elementRect - bodyRect;
+
             const offsetPosition = elementPosition - offset;
 
             window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
+                top:offsetPosition,
+                behavior:'smooth'
             });
+
         }
+
     }
+
+    if(window.location.hash){
+        history.replaceState('',document.title,window.location.pathname + window.location.search);
+    }
+
+    if('scrollRestoration' in history){
+        history.scrollRestoration = 'manual';
+    }
+
+    window.scrollTo(0,0);
+
+    AOS.init({
+        once:true,
+        duration:800
+    });
 
     window.onscroll = function(){
 
@@ -430,15 +766,49 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
         if(window.pageYOffset > 50){
 
-            nav.classList.add('glass','py-4','shadow-2xl');
+            nav.classList.add('glass','shadow-2xl','py-4');
+
             nav.classList.remove('py-6');
 
-        } else {
+        }else{
 
-            nav.classList.remove('glass','py-4','shadow-2xl');
+            nav.classList.remove('glass','shadow-2xl','py-4');
+
             nav.classList.add('py-6');
+
         }
+
     }
+
+    function filterMatch(category,event){
+
+        const cards = document.querySelectorAll('.match-card');
+
+        const btns = document.querySelectorAll('.tab-btn');
+
+        btns.forEach(btn=>{
+            btn.classList.remove('bg-yellow-500','text-black');
+            btn.classList.add('bg-white/5','text-gray-400');
+        });
+
+        event.currentTarget.classList.add('bg-yellow-500','text-black');
+
+        cards.forEach(card=>{
+
+            if(category === 'all' || card.dataset.category === category){
+
+                card.style.display = 'block';
+
+            }else{
+
+                card.style.display = 'none';
+
+            }
+
+        });
+
+    }
+
 </script>
 
 </body>
