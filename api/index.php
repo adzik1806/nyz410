@@ -315,80 +315,67 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 </section>
 
 <!-- PARTNERS -->
+<!-- PARTNERS -->
 <section class="py-20 border-y border-white/5 bg-white/[0.01] overflow-hidden">
 
     <div class="text-center mb-14" data-aos="fade-up">
+
         <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-black mb-2">
             Support System
         </p>
+
         <h2 class="text-4xl font-black uppercase italic tracking-tight">
             Our <span class="text-gradient">Partners</span>
         </h2>
+
     </div>
 
-    <div class="marquee-container relative w-full overflow-hidden">
-        
-        <div class="animate-scroll-fast flex items-center gap-8 md:gap-12 w-max">
+    <div class="marquee-container">
+
+        <div class="animate-scroll-fast">
 
             <?php 
-            $sql_marquee = mysqli_query($conn, "SELECT * FROM sponsors");
-            
-            // Ambil semua data ke array untuk trik looping seamless (tanpa putus)
-            $sponsors = [];
-            if ($sql_marquee && mysqli_num_rows($sql_marquee) > 0) {
-                while($row = mysqli_fetch_assoc($sql_marquee)) {
-                    $sponsors[] = $row;
+            $sql_marquee = mysqli_query($conn,"SELECT * FROM sponsors");
+
+            if(mysqli_num_rows($sql_marquee) > 0):
+
+            while($s = mysqli_fetch_assoc($sql_marquee)): 
+
+                $logo = "assets/sponsors/" . $s['logo_icon'];
+
+                // fallback jika file tidak ditemukan
+                if(!file_exists($logo)){
+                    $logo = "assets/6a020282c9f4_logo nyenkzer.png";
                 }
-            }
-
-            if (!empty($sponsors)):
-                // Gandakan array agar animasi menyambung mulus di layar lebar
-                $display_sponsors = array_merge($sponsors, $sponsors);
-                
-                foreach ($display_sponsors as $s): 
-                    // PERBAIKAN UTAMA: Path disesuaikan ke folder assets/sponsors/ sesuai struktur proyek Anda
-                    $path_gambar = "assets/sponsors/" . $s['logo_icon']; 
             ?>
 
-                <div class="sponsor-item flex-shrink-0 flex flex-col items-center justify-center text-center">
+            <div class="sponsor-item">
 
-                    <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white rounded-xl md:rounded-[24px] flex items-center justify-center p-4 shadow-xl shadow-black/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-yellow-500/20">
-                        
-                        <img src="<?php echo $path_gambar; ?>" 
-                             class="max-w-full max-h-full object-contain block mx-auto" 
-                             alt="<?php echo $s['nama_sponsor']; ?>"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        
-                        <span class="hidden text-slate-900 font-black text-xs uppercase tracking-wider">
-                            <?php echo $s['nama_sponsor']; ?>
-                        </span>
-                        
-                    </div>
+                <div class="sponsor-box">
 
-                    <span class="text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black mt-3 block">
-                        <?php echo $s['nama_sponsor']; ?>
-                    </span>
+                    <img 
+                        src="<?php echo $logo; ?>" 
+                        alt="<?php echo $s['nama_sponsor']; ?>"
+                        title="<?php echo $s['nama_sponsor']; ?>"
+                        loading="lazy"
+                        class="max-h-full max-w-full object-contain"
+                    >
 
                 </div>
 
+                <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black">
+                    <?php echo $s['nama_sponsor']; ?>
+                </span>
+
+            </div>
+
             <?php 
-                endforeach; 
-            else: 
-                // Tampilan default berupa placeholder jika database kosong
-                for($i = 1; $i <= 4; $i++):
-            ?>
-                <div class="sponsor-item flex-shrink-0 flex flex-col items-center">
-                    <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-handshake text-yellow-500/20 text-2xl"></i>
-                    </div>
-                    <span class="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-black mt-3 block">Sample Partner</span>
-                </div>
-            <?php 
-                endfor;
+                endwhile; 
             endif; 
             ?>
 
         </div>
+
     </div>
 
 </section>
