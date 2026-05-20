@@ -326,69 +326,82 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
         </h2>
     </div>
 
-    <div class="marquee-container relative w-full overflow-hidden">
+    <div class="marquee-container relative w-full overflow-hidden flex justify-center">
         
-        <div class="animate-scroll-fast flex items-center gap-8 md:gap-12 w-max">
-
-            <?php 
-            $sql_marquee = mysqli_query($conn, "SELECT * FROM sponsors");
-            
-            // Ambil semua data ke array untuk trik looping seamless (tanpa putus)
-            $sponsors = [];
-            if ($sql_marquee && mysqli_num_rows($sql_marquee) > 0) {
-                while($row = mysqli_fetch_assoc($sql_marquee)) {
-                    $sponsors[] = $row;
-                }
+        <?php 
+        $sql_marquee = mysqli_query($conn, "SELECT * FROM sponsors");
+        
+        $sponsors = [];
+        if ($sql_marquee && mysqli_num_rows($sql_marquee) > 0) {
+            while($row = mysqli_fetch_assoc($sql_marquee)) {
+                $sponsors[] = $row;
             }
+        }
 
-            if (!empty($sponsors)):
-                // Gandakan array agar animasi menyambung mulus di layar lebar
-                $display_sponsors = array_merge($sponsors, $sponsors);
-                
-                foreach ($display_sponsors as $s): 
-                    // PERBAIKAN UTAMA: Path disesuaikan ke folder assets/sponsors/ sesuai struktur proyek Anda
-                    $path_gambar = "assets/sponsors/" . $s['logo_icon']; 
-            ?>
-
-                <div class="sponsor-item flex-shrink-0 flex flex-col items-center justify-center text-center">
-
-                    <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white rounded-xl md:rounded-[24px] flex items-center justify-center p-4 shadow-xl shadow-black/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-yellow-500/20">
-                        
-                        <img src="<?php echo $path_gambar; ?>" 
-                             class="max-w-full max-h-full object-contain block mx-auto" 
-                             alt="<?php echo $s['nama_sponsor']; ?>"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        
-                        <span class="hidden text-slate-900 font-black text-xs uppercase tracking-wider">
-                            <?php echo $s['nama_sponsor']; ?>
-                        </span>
-                        
-                    </div>
-
-                    <span class="text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black mt-3 block">
-                        <?php echo $s['nama_sponsor']; ?>
-                    </span>
-
+        if (!empty($sponsors)):
+            $jumlah_sponsor = count($sponsors);
+            
+            // JIKA SPONSOR SEDIKIT (kurang dari 4): Kita tampilkan statis di tengah, TIDAK USAH DI-MARQUEE agar tidak double aneh
+            if ($jumlah_sponsor < 4): 
+        ?>
+                <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+                    <?php 
+                    foreach ($sponsors as $s): 
+                        // MENYESUAIKAN PATH BERDASARKAN SERVERLESS VERCEL
+                        $path_gambar = "assets/sponsors/" . $s['logo_icon']; 
+                    ?>
+                        <div class="sponsor-item flex flex-col items-center justify-center text-center">
+                            <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white rounded-xl md:rounded-[24px] flex items-center justify-center p-4 shadow-xl shadow-black/40 transition-all duration-300 hover:-translate-y-2">
+                                <img src="<?php echo $path_gambar; ?>" 
+                                     class="max-w-full max-h-full object-contain block mx-auto" 
+                                     alt="<?php echo $s['nama_sponsor']; ?>">
+                            </div>
+                            <span class="text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black mt-3 block">
+                                <?php echo $s['nama_sponsor']; ?>
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
 
-            <?php 
-                endforeach; 
+        <?php 
+            // JIKA SPONSOR BANYAK (4 atau lebih): Baru kita jalankan fitur animasi gerak meluncur (Marquee)
             else: 
-                // Tampilan default berupa placeholder jika database kosong
-                for($i = 1; $i <= 4; $i++):
-            ?>
-                <div class="sponsor-item flex-shrink-0 flex flex-col items-center">
-                    <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-handshake text-yellow-500/20 text-2xl"></i>
-                    </div>
-                    <span class="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-black mt-3 block">Sample Partner</span>
+                $display_sponsors = array_merge($sponsors, $sponsors); // Duplikasi aman untuk seamless loop
+        ?>
+                <div class="animate-scroll-fast flex items-center gap-8 md:gap-12 w-max">
+                    <?php 
+                    foreach ($display_sponsors as $s): 
+                        $path_gambar = "assets/sponsors/" . $s['logo_icon']; 
+                    ?>
+                        <div class="sponsor-item flex-shrink-0 flex flex-col items-center justify-center text-center">
+                            <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white rounded-xl md:rounded-[24px] flex items-center justify-center p-4 shadow-xl shadow-black/40">
+                                <img src="<?php echo $path_gambar; ?>" 
+                                     class="max-w-full max-h-full object-contain block mx-auto" 
+                                     alt="<?php echo $s['nama_sponsor']; ?>">
+                            </div>
+                            <span class="text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black mt-3 block">
+                                <?php echo $s['nama_sponsor']; ?>
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php 
-                endfor;
+        <?php 
             endif; 
-            ?>
+        else: 
+            // Tampilan cadangan jika database kosong
+            for($i = 1; $i <= 3; $i++):
+        ?>
+            <div class="mx-4 flex flex-col items-center">
+                <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-handshake text-yellow-500/20 text-2xl"></i>
+                </div>
+                <span class="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-black mt-3 block">Belum Ada Data</span>
+            </div>
+        <?php 
+            endfor;
+        endif; 
+        ?>
 
-        </div>
     </div>
 
 </section>
