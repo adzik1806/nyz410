@@ -165,59 +165,6 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             background:#1e293b;
             border-radius:20px;
         }
-
-        .marquee-container{
-    width:100%;
-    overflow:hidden;
-    position:relative;
-}
-
-.animate-scroll-fast{
-    display:flex;
-    align-items:center;
-    width:max-content;
-    animation:scrollMarquee 25s linear infinite;
-}
-
-@keyframes scrollMarquee{
-    0%{
-        transform:translateX(100%);
-    }
-    100%{
-        transform:translateX(-100%);
-    }
-}
-
-.sponsor-item{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    margin:0 40px;
-}
-
-.sponsor-box{
-    width:220px;
-    height:120px;
-    background:#fff;
-    border-radius:24px;
-    padding:20px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:0.3s ease;
-}
-
-.sponsor-box img{
-    max-width:100%;
-    max-height:100%;
-    object-fit:contain;
-}
-
-.sponsor-box:hover{
-    transform:translateY(-6px) scale(1.03);
-    box-shadow:0 10px 30px rgba(251,191,36,0.3);
-}
     </style>
 </head>
 
@@ -368,67 +315,80 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 </section>
 
 <!-- PARTNERS -->
-<!-- PARTNERS -->
 <section class="py-20 border-y border-white/5 bg-white/[0.01] overflow-hidden">
 
     <div class="text-center mb-14" data-aos="fade-up">
-
         <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-black mb-2">
             Support System
         </p>
-
         <h2 class="text-4xl font-black uppercase italic tracking-tight">
             Our <span class="text-gradient">Partners</span>
         </h2>
-
     </div>
 
-    <div class="marquee-container">
-
-        <div class="animate-scroll-fast">
+    <div class="marquee-container relative w-full overflow-hidden">
+        
+        <div class="animate-scroll-fast flex items-center gap-8 md:gap-12 w-max">
 
             <?php 
-            $sql_marquee = mysqli_query($conn,"SELECT * FROM sponsors");
-
-            if(mysqli_num_rows($sql_marquee) > 0):
-
-            while($s = mysqli_fetch_assoc($sql_marquee)): 
-
-                $logo = "assets/sponsors/" . $s['logo_icon'];
-
-                // fallback jika file tidak ditemukan
-                if(!file_exists($logo)){
-                    $logo = "assets/6a020282c9f4_logo nyenkzer.png";
+            $sql_marquee = mysqli_query($conn, "SELECT * FROM sponsors");
+            
+            // Ambil semua data ke array untuk trik looping seamless (tanpa putus)
+            $sponsors = [];
+            if ($sql_marquee && mysqli_num_rows($sql_marquee) > 0) {
+                while($row = mysqli_fetch_assoc($sql_marquee)) {
+                    $sponsors[] = $row;
                 }
+            }
+
+            if (!empty($sponsors)):
+                // Gandakan array agar animasi menyambung mulus di layar lebar
+                $display_sponsors = array_merge($sponsors, $sponsors);
+                
+                foreach ($display_sponsors as $s): 
+                    // PERBAIKAN UTAMA: Path disesuaikan ke folder assets/sponsors/ sesuai struktur proyek Anda
+                    $path_gambar = "assets/sponsors/" . $s['logo_icon']; 
             ?>
 
-            <div class="sponsor-item">
+                <div class="sponsor-item flex-shrink-0 flex flex-col items-center justify-center text-center">
 
-                <div class="sponsor-box">
+                    <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white rounded-xl md:rounded-[24px] flex items-center justify-center p-4 shadow-xl shadow-black/40 transition-all duration-300 hover:-translate-y-2 hover:shadow-yellow-500/20">
+                        
+                        <img src="<?php echo $path_gambar; ?>" 
+                             class="max-w-full max-h-full object-contain block mx-auto" 
+                             alt="<?php echo $s['nama_sponsor']; ?>"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        
+                        <span class="hidden text-slate-900 font-black text-xs uppercase tracking-wider">
+                            <?php echo $s['nama_sponsor']; ?>
+                        </span>
+                        
+                    </div>
 
-                    <img 
-                        src="<?php echo $logo; ?>" 
-                        alt="<?php echo $s['nama_sponsor']; ?>"
-                        title="<?php echo $s['nama_sponsor']; ?>"
-                        loading="lazy"
-                        class="max-h-full max-w-full object-contain"
-                    >
+                    <span class="text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black mt-3 block">
+                        <?php echo $s['nama_sponsor']; ?>
+                    </span>
 
                 </div>
 
-                <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black">
-                    <?php echo $s['nama_sponsor']; ?>
-                </span>
-
-            </div>
-
             <?php 
-                endwhile; 
+                endforeach; 
+            else: 
+                // Tampilan default berupa placeholder jika database kosong
+                for($i = 1; $i <= 4; $i++):
+            ?>
+                <div class="sponsor-item flex-shrink-0 flex flex-col items-center">
+                    <div class="w-[140px] h-[80px] md:w-[200px] md:h-[100px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-handshake text-yellow-500/20 text-2xl"></i>
+                    </div>
+                    <span class="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-black mt-3 block">Sample Partner</span>
+                </div>
+            <?php 
+                endfor;
             endif; 
             ?>
 
         </div>
-
     </div>
 
 </section>
