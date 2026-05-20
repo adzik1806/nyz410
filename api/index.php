@@ -165,6 +165,59 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             background:#1e293b;
             border-radius:20px;
         }
+
+        .marquee-container{
+    width:100%;
+    overflow:hidden;
+    position:relative;
+}
+
+.animate-scroll-fast{
+    display:flex;
+    align-items:center;
+    width:max-content;
+    animation:scrollMarquee 25s linear infinite;
+}
+
+@keyframes scrollMarquee{
+    0%{
+        transform:translateX(100%);
+    }
+    100%{
+        transform:translateX(-100%);
+    }
+}
+
+.sponsor-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    margin:0 40px;
+}
+
+.sponsor-box{
+    width:220px;
+    height:120px;
+    background:#fff;
+    border-radius:24px;
+    padding:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:0.3s ease;
+}
+
+.sponsor-box img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+}
+
+.sponsor-box:hover{
+    transform:translateY(-6px) scale(1.03);
+    box-shadow:0 10px 30px rgba(251,191,36,0.3);
+}
     </style>
 </head>
 
