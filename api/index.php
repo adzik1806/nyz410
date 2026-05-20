@@ -641,37 +641,36 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
 </section>
 
-<!-- GALLERY -->
 <section id="gallery" class="py-32 px-6">
 
-    <div class="max-w-7xl mx-auto text-center mb-16">
-
+    <div class="max-w-7xl mx-auto text-center mb-16" data-aos="fade-up">
         <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-bold mb-4">
             Moments
         </p>
-
         <h2 class="text-5xl font-black uppercase italic tracking-tight">
             Activity <span class="text-gradient">Gallery</span>
         </h2>
-
     </div>
 
     <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
 
         <?php
-        $gal = mysqli_query($conn,"SELECT * FROM gallery ORDER BY id_gallery DESC LIMIT 8");
+        $gal = mysqli_query($conn, "SELECT * FROM gallery ORDER BY id_gallery DESC LIMIT 8");
 
         while($rg = mysqli_fetch_assoc($gal)):
+            // Ambil data gambar (bisa berupa path file atau data Base64 dari TiDB Anda)
+            $foto_gallery = $rg['foto']; 
         ?>
 
-        <div class="gallery-item relative overflow-hidden rounded-3xl h-64 border border-white/5">
+        <div class="gallery-item relative overflow-hidden rounded-3xl h-64 border border-white/5 group">
 
-            <img src="<?php echo $rg['foto']; ?>"
-                 class="w-full h-full object-cover">
+            <img src="<?php echo $foto_gallery; ?>"
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
 
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 hover:opacity-100 transition flex items-end p-5">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5 cursor-pointer"
+                 onclick="openModal('<?php echo $foto_gallery; ?>')">
 
-                <p class="text-yellow-500 uppercase tracking-widest text-[10px] font-bold">
+                <p class="text-yellow-500 uppercase tracking-widest text-[10px] font-bold transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                     <?php echo $rg['caption']; ?>
                 </p>
 
