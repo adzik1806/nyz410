@@ -165,6 +165,60 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
             background:#1e293b;
             border-radius:20px;
         }
+
+        .marquee-container{
+    width:100%;
+    overflow:hidden;
+    position:relative;
+}
+
+.animate-scroll-fast{
+    display:flex;
+    align-items:center;
+    width:max-content;
+    animation:scrollMarquee 25s linear infinite;
+}
+
+@keyframes scrollMarquee{
+    0%{
+        transform:translateX(100%);
+    }
+    100%{
+        transform:translateX(-100%);
+    }
+}
+
+.sponsor-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    margin:0 35px;
+}
+
+.sponsor-box{
+    width:180px;
+    height:100px;
+    background:white;
+    border-radius:24px;
+    padding:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:0.4s ease;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+.sponsor-box:hover{
+    transform:translateY(-6px) scale(1.03);
+    box-shadow:0 15px 40px rgba(251,191,36,0.25);
+}
+
+.sponsor-box img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+}
     </style>
 </head>
 
@@ -314,81 +368,82 @@ $saldo_akhir = ($m['total'] ?? 0) - ($k['total'] ?? 0);
 
 </section>
 
+<!-- PARTNERS -->
 <section class="py-20 border-y border-white/5 bg-white/[0.01] overflow-hidden">
 
     <div class="text-center mb-14" data-aos="fade-up">
+
         <p class="text-yellow-500 uppercase tracking-[0.4em] text-xs font-black mb-2">
             Support System
         </p>
+
         <h2 class="text-4xl font-black uppercase italic tracking-tight">
             Our <span class="text-gradient">Partners</span>
         </h2>
+
+        <!-- SEO -->
+        <h3 class="sr-only">
+            Sponsor dan Partner Resmi <?php echo $setting['nama_website']; ?>
+        </h3>
+
     </div>
 
-    <div class="marquee-container relative w-full">
-        <div class="animate-scroll-fast flex items-center">
+    <div class="marquee-container">
+
+        <div class="animate-scroll-fast">
 
             <?php 
-            $sql_marquee = mysqli_query($conn, "SELECT * FROM sponsors");
-            
-            // Kita tampung dulu ke dalam array agar bisa diduplikasi untuk trik animasi seamless (tanpa putus)
-            $sponsors = [];
-            if ($sql_marquee && mysqli_num_rows($sql_marquee) > 0) {
-                while($row = mysqli_fetch_assoc($sql_marquee)) {
-                    $sponsors[] = $row;
-                }
-            }
+            $sql_marquee = mysqli_query($conn,"SELECT * FROM sponsors");
 
-            if (!empty($sponsors)):
-                // Menggabungkan array dengan dirinya sendiri agar meluncur tanpa jeda kosong di layar
-                $display_sponsors = array_merge($sponsors, $sponsors);
-                
-                foreach ($display_sponsors as $s): 
-                    /** * CATATAN PENTING: 
-                     * Jika file gambar ditaruh di dalam folder, pastikan path-nya benar.
-                     * Contoh jika di dalam folder admin/assets/img/sponsors/, ubah menjadi:
-                     * "admin/assets/img/sponsors/" . $s['logo_icon']
-                     */
-                    $path_gambar = "assets/" . $s['logo_icon']; 
+            if(mysqli_num_rows($sql_marquee) > 0):
+
+                while($s = mysqli_fetch_assoc($sql_marquee)):
+
+                    // Fix path logo
+                    $logo = !empty($s['logo_icon']) 
+                        ? 'assets/sponsors/' . $s['logo_icon']
+                        : 'assets/no-image.png';
+
+                    // Jika file tidak ada
+                    if(!file_exists($logo)){
+                        $logo = 'assets/no-image.png';
+                    }
             ?>
 
-                <div class="sponsor-item flex-shrink-0 flex flex-col items-center mx-4 md:mx-8">
+            <div class="sponsor-item">
 
-                    <div class="sponsor-box bg-white flex items-center justify-center shadow-lg shadow-black/30 rounded-[18px] md:rounded-[30px]">
-                        <img src="<?php echo $path_gambar; ?>" 
-                             class="max-h-full max-w-full object-contain p-2" 
-                             alt="<?php echo $s['nama_sponsor']; ?>"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        
-                        <span class="hidden text-slate-800 font-extrabold text-sm uppercase tracking-wider">
-                            <?php echo $s['nama_sponsor']; ?>
-                        </span>
-                    </div>
+                <div class="sponsor-box">
 
-                    <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black mt-3">
-                        <?php echo $s['nama_sponsor']; ?>
-                    </span>
+                    <img 
+                        src="<?php echo $logo; ?>" 
+                        alt="<?php echo $s['nama_sponsor']; ?>" 
+                        title="<?php echo $s['nama_sponsor']; ?>"
+                        loading="lazy"
+                        class="max-h-full max-w-full object-contain transition-all duration-300 hover:scale-105"
+                    >
 
                 </div>
 
+                <span class="hidden md:block text-[10px] uppercase tracking-[0.3em] text-yellow-500/60 font-black text-center">
+                    <?php echo $s['nama_sponsor']; ?>
+                </span>
+
+            </div>
+
             <?php 
-                endforeach; 
-            else: 
-                // Tampilan cadangan jika tabel 'sponsors' di database Anda benar-benar kosong
-                for($i = 1; $i <= 4; $i++):
+                endwhile; 
+            else:
             ?>
-                <div class="sponsor-item flex-shrink-0 flex flex-col items-center mx-8">
-                    <div class="sponsor-box bg-white/5 border border-white/10 flex items-center justify-center w-[140px] h-[85px] md:w-[220px] md:h-[120px] rounded-2xl">
-                        <i class="fa-solid fa-handshake text-yellow-500/20 text-3xl"></i>
-                    </div>
-                    <span class="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-black mt-3">Placeholder</span>
-                </div>
-            <?php 
-                endfor;
-            endif; 
-            ?>
+
+            <!-- Jika sponsor kosong -->
+            <div class="w-full text-center py-10 text-gray-500 uppercase tracking-[0.3em] text-xs">
+                Belum ada sponsor tersedia
+            </div>
+
+            <?php endif; ?>
 
         </div>
+
     </div>
 
 </section>
